@@ -13,20 +13,23 @@ print("device is: ", device)
 
 class CNN_mawilab:
     def __init__(self):
-        # self.mawilab_data_all = np.load("./data/mawilab_0401_10w.npy")
-        # self.mawilab_label = np.load("./data/20180401_label_20_30w.npy").astype(np.longlong)
-        self.mawilab_data_all = np.load("./data/mawilab_10w.npy")
-        self.mawilab_label = np.load("./data/mawilab_label_10w.npy")
+        self.mawilab_data_all = np.load("../MAWILab-GAfeature/mawilab_10w.npy")
+        self.mawilab_label = np.load("../MAWILab-GAfeature/mawilab_label_10w.npy")
 
-        self.F1s = np.load("./data/F1s_mawilab.npy")
-        self.Precisions = np.load("./data/Precisions_mawilab.npy")
-        self.Recalls = np.load("./data/Recalls_mawilab.npy")
-        self.FPRs = np.load("./data/FPRs_mawilab.npy")
+        sz = 1 << 13
+        x = np.zeros(sz)
+        for i in range(x.shape[0]):
+            x[i] = np.nan
+        self.F1s = x.copy()
 
-        # data_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\data_30w_des.tsv.npy"
-        # labels_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\labels_30w_des.csv.npy"
-        # self.mawilab_data_all = np.load(data_path).astype(np.float32)
-        # self.mawilab_label = np.load(labels_path)
+        # self.FPRs = x.copy()
+        # self.Precisions = x.copy()
+        # self.Recalls = x.copy()
+        # self.F1s = np.load("./data/F1s_mawilab.npy")
+        # self.Precisions = np.load("./data/Precisions_mawilab.npy")
+        # self.Recalls = np.load("./data/Recalls_mawilab.npy")
+        # self.FPRs = np.load("./data/FPRs_mawilab.npy")
+
         self.train_size = 90000  # 270000
         self.test_size = 10000  # 29999
         # 打乱
@@ -140,7 +143,7 @@ class CNN_mawilab:
             fpr = 0
         return f1, precision, recall, fpr
 
-    def _run(self, bin, is_save=True):  # 真运行
+    def _run(self, bin):
         print("running feature = ", self.bin2name(bin))
         sub = []
         x = bin
@@ -155,15 +158,15 @@ class CNN_mawilab:
 
         f1, precision, recall, fpr = self.train_test(self.mawilab_data_all[:, sub], self.mawilab_label)
         self.F1s[bin] = f1
-        self.Precisions[bin] = precision
-        self.Recalls[bin] = recall
-        self.FPRs[bin] = fpr
+        # self.Precisions[bin] = precision
+        # self.Recalls[bin] = recall
+        # self.FPRs[bin] = fpr
 
-        if is_save:
-            np.save("./data/F1s_mawilab.npy", self.F1s)
-            np.save("./data/Precisions_mawilab.npy", self.Precisions)
-            np.save("./data/Recalls_mawilab.npy", self.Recalls)
-            np.save("./data/FPRs_mawilab.npy", self.FPRs)
+        # if is_save:
+        #     np.save("./data/F1s_mawilab.npy", self.F1s)
+        #     np.save("./data/Precisions_mawilab.npy", self.Precisions)
+        #     np.save("./data/Recalls_mawilab.npy", self.Recalls)
+        #     np.save("./data/FPRs_mawilab.npy", self.FPRs)
 
     def run(self, bins):  # bin表示对应的子集的二进制, 如果没有被保存才运行
         ans = np.zeros(bins.shape[0])
@@ -206,17 +209,17 @@ class CNN_mawilab:
         name += ")"
         return name
 
-    # 重置已经保存的训练结果
-    def reset_result(self):
-        sz = 1 << 13
-        x = np.zeros(sz)
-        for i in range(x.shape[0]):
-            x[i] = np.nan
-        self.F1s = x.copy()
-        self.FPRs = x.copy()
-        self.Precisions = x.copy()
-        self.Recalls = x.copy()
-        np.save("./data/F1s_mawilab.npy", self.F1s)
-        np.save("./data/Precisions_mawilab.npy", self.Precisions)
-        np.save("./data/Recalls_mawilab.npy", self.Recalls)
-        np.save("./data/FPRs_mawilab.npy", self.FPRs)
+    # # 重置已经保存的训练结果
+    # def reset_result(self):
+    #     sz = 1 << 13
+    #     x = np.zeros(sz)
+    #     for i in range(x.shape[0]):
+    #         x[i] = np.nan
+    #     self.F1s = x.copy()
+    #     self.FPRs = x.copy()
+    #     self.Precisions = x.copy()
+    #     self.Recalls = x.copy()
+    #     np.save("./data/F1s_mawilab.npy", self.F1s)
+    #     np.save("./data/Precisions_mawilab.npy", self.Precisions)
+    #     np.save("./data/Recalls_mawilab.npy", self.Recalls)
+    #     np.save("./data/FPRs_mawilab.npy", self.FPRs)

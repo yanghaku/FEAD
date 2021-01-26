@@ -3,14 +3,12 @@ import torch
 import newCNN
 import numpy as np
 import time
-import sklearn as sk
 from torch.autograd import Variable
 from sklearn.metrics import accuracy_score
-import pandas as pd
 
 
 class FEAD:
-    def __init__(self, sz):
+    def __init__(self, sz=140):
         self.sz = sz
         self.model = newCNN.Model(sz)
         self.cost = torch.nn.CrossEntropyLoss()
@@ -19,7 +17,7 @@ class FEAD:
     def fit(self, X, Y):
         data = X
         label = Y
-        n_epochs = 4
+        n_epochs = 10
         batch_size = 8
         self.model.train()
         train_size = len(X)
