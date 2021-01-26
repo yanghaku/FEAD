@@ -4,11 +4,10 @@ import newCNN
 import numpy as np
 import time
 from torch.autograd import Variable
-from sklearn.metrics import accuracy_score
 
 
 class FEAD:
-    def __init__(self, sz=140):
+    def __init__(self, sz=60):
         self.sz = sz
         self.model = newCNN.Model(sz)
         self.cost = torch.nn.CrossEntropyLoss()

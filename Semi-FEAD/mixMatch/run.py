@@ -1,21 +1,23 @@
-#from mixmatch_pytorch import MixMatchLoader, get_mixmatch_loss
-#import mixmatch_loader
 from get_mixmatch_loss import get_mixmatch_loss
 from mixmatch_loader import MixMatchLoader
 import torch
-#from torch import nn
+
+import sys
+
+sys.path.append("../..")
 import newCNN
 import numpy as np
 from DataLoad import DataLoad
 from torch.autograd import Variable
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import random
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("device is: ", device)
 
 batch_size = 8
-data_path = "data/mawilab_ga.npy"
-labels_path = "data/mawilab_label_10w.npy"
+data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
+labels_path = "../../MAWILab-GAfeature/mawilab_label_10w.npy"
 data = np.load(data_path)
 labels = np.load(labels_path)
 
@@ -44,9 +46,8 @@ def Test(model, test, test_label, test_size):
 # for label_train_size in [270, 540, 1350, 2700, 5400, 13500, 27000, 270000]:
 
 
-
-for label_train_size in [180, 450, 900, 1800, 4500, 9000,18000]:  # [90000]:
-    print("the label size is",label_train_size)
+for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
+    print("the label size is", label_train_size)
     step_counter = 0
 
     test_size = 10000
@@ -71,7 +72,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000,18000]:  # [90000]:
     test_label = torch.from_numpy(labels[train_size:train_size + test_size])
 
     dataset_unlabeled = torch.utils.data.TensorDataset(torch.from_numpy(unlabeled_train))
-    #loader_labeled = DataLoad(torch.from_numpy(labeled_train), torch.from_numpy(train_label), batch_size)# 1
+    # loader_labeled = DataLoad(torch.from_numpy(labeled_train), torch.from_numpy(train_label), batch_size)# 1
     loader_labeled = DataLoad(labeled_train, train_label, batch_size)
     model = newCNN.Model(140)
     cost = torch.nn.CrossEntropyLoss()
@@ -81,32 +82,34 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000,18000]:  # [90000]:
     print("pre-train")
     model.train()
     n_epochs = 30
-    train_batch = label_train_size//batch_size
+    train_batch = label_train_size // batch_size
 
     for epoch in range(n_epochs):
         running_correct = 0
         loss_sum = 0
         for i in range(train_batch):
-            inputs = Variable(torch.from_numpy(labeled_train[i*batch_size:min((i+1)*batch_size,label_train_size)]),
-                             requires_grad=False).view(-1,1,140)
-            targets = Variable(torch.from_numpy(train_label[i*batch_size:min((i+1)*batch_size,label_train_size)]),
-                               requires_grad = False)
+            inputs = Variable(
+                torch.from_numpy(labeled_train[i * batch_size:min((i + 1) * batch_size, label_train_size)]),
+                requires_grad=False).view(-1, 1, 140)
+            targets = Variable(
+                torch.from_numpy(train_label[i * batch_size:min((i + 1) * batch_size, label_train_size)]),
+                requires_grad=False)
 
             output = model(inputs)
-            #print(output)
-            _,pred = torch.max(output.data,1)
-           # print(pred)
+            # print(output)
+            _, pred = torch.max(output.data, 1)
+            # print(pred)
             optimizer.zero_grad()
-            loss = cost(output,targets)
+            loss = cost(output, targets)
             loss.backward()
             optimizer.step()
             loss_sum += loss.data.cpu().numpy()
             running_correct += torch.sum(pred == targets).data
 
-        print("the ",epoch," epoch Loss is :{:.4f},Train acc is :{:.4f}%".format(loss_sum/label_train_size,100*running_correct//label_train_size
-                                                                             ))
+        print("the ", epoch, " epoch Loss is :{:.4f},Train acc is :{:.4f}%".format(loss_sum / label_train_size,
+                                                                                   100 * running_correct // label_train_size
+                                                                                   ))
     print("pre-train is over")
-
 
     loader_mixmatch = MixMatchLoader(
         loader_labeled,
@@ -122,7 +125,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000,18000]:  # [90000]:
         criterion_labeled=torch.nn.BCEWithLogitsLoss(),
         output_transform=torch.sigmoid,
         K=2,
-        weight_unlabeled=5.,#100.
+        weight_unlabeled=5.,  # 100.
         criterion_unlabeled=torch.nn.MSELoss()
     )
 
@@ -135,48 +138,49 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000,18000]:  # [90000]:
     model.train()
     print("train: ")
 
-    #for epoch in range(n_epochs):
-    #loss_sum = 0
-    #running_correct = 0
-    #num = 0
+    # for epoch in range(n_epochs):
+    # loss_sum = 0
+    # running_correct = 0
+    # num = 0
     for epoch in range(10):
-        print("the ",epoch," th epoch")
+        print("the ", epoch, " th epoch")
         num = 0
         running_correct = 0
         loss_sum = 0
         for batch in loader_mixmatch:
-            num = num + batch_size*3
+            num = num + batch_size * 3
             inputs = Variable(batch['features'].to(device), requires_grad=False).view(-1, 1, 140)
-            label = Variable(batch['targets'].to(device),requires_grad = False)
+            label = Variable(batch['targets'].to(device), requires_grad=False)
             logits = model(inputs)
             loss = criterion(logits, label)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             _, pred = torch.max(logits.data, 1)
-            _, la = torch.max(label.data,1)
+            _, la = torch.max(label.data, 1)
             running_correct += torch.sum(pred == la)
             loss_sum += loss.data.cpu()
-            #混合训练
-            index = random.randint(0, train_batch-1)
-            inputs = Variable(torch.from_numpy(labeled_train[index*batch_size:min((index+1)*batch_size,label_train_size)]),
-                             requires_grad=False).view(-1,1,140)
-            targets = Variable(torch.from_numpy(train_label[index*batch_size:min((index+1)*batch_size,label_train_size)]),
-                               requires_grad = False)
+            # 混合训练
+            index = random.randint(0, train_batch - 1)
+            inputs = Variable(
+                torch.from_numpy(labeled_train[index * batch_size:min((index + 1) * batch_size, label_train_size)]),
+                requires_grad=False).view(-1, 1, 140)
+            targets = Variable(
+                torch.from_numpy(train_label[index * batch_size:min((index + 1) * batch_size, label_train_size)]),
+                requires_grad=False)
             output = model(inputs)
             optimizer.zero_grad()
             loss1 = cost(output, targets)
             loss1.backward()
             optimizer.step()
-            #混合训练结束
-
+            # 混合训练结束
 
         print("the ", epoch, " epoch Loss is :{:.4f},Train acc is :{:.4f}%".format(loss_sum / num,
                                                                                    100 * running_correct // num
                                                                                    ))
         print("test....")
         f1, precision, recall, acc = Test(model, test, test_label, test_size)
-        print("|label size is", label_train_size, "|label percent is", label_train_size / train_size * 100, "|F1 is", f1, "|precision is", precision, "|recall is", recall,
-                "|acc is",
-                acc, "| 1-acc is", 1 - acc, "|")
-
+        print("|label size is", label_train_size, "|label percent is", label_train_size / train_size * 100, "|F1 is",
+              f1, "|precision is", precision, "|recall is", recall,
+              "|acc is",
+              acc, "| 1-acc is", 1 - acc, "|")

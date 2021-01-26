@@ -1,6 +1,9 @@
 import numpy as np
 import sklearn
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+import sys
+
+sys.path.append('../..')
 import FEAD
 
 RANDOM = 2020
@@ -91,9 +94,9 @@ labels_path = "../../MAWILab-GAfeature/mawilab_label_10w.npy"
 data = np.load(data_path).astype(np.float32)
 labels = np.load(labels_path)
 
-# ff = open("./data/res_tri.md", "w")
+ff = open("./res_tri-training.md", "w")
 
-for label_train_size in [90000]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:
+for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:
     test_size = 10000
     train_size = 90000
     # test_size = 29999
@@ -135,6 +138,6 @@ for label_train_size in [90000]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:
     RECALL.append(recall)
     F1.append(f1)
     print("|", label_train_size, "|", label_train_size / train_size * 100, "|", f1, "|", precision, "|", recall, "|",
-          accuracy, "|", 1 - accuracy, "|", )#file=ff)
+          accuracy, "|", 1 - accuracy, "|", file=ff)
 
-# ff.close()
+ff.close()

@@ -4,7 +4,7 @@ from sklearn.metrics import f1_score, precision_score, accuracy_score, recall_sc
 from sklearn.preprocessing import StandardScaler
 from matplotlib import pyplot as plt
 
-IDS = True
+IDS = False
 
 if IDS:
     data_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\data_30w_des.tsv.npy"
@@ -15,14 +15,14 @@ if IDS:
     lst = [270, 540, 1350, 2700, 5400, 13500, 27000]
 
 else:
-    data_path = "D:\\OneDrive\\multiple\\code\\test_feature\\data\\mawilab_ga.npy"
-    labels_path = "D:\\OneDrive\\multiple\\code\\test_feature\\data\\mawilab_label_10w.npy"
+    data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
+    labels_path = "../../MAWILab-GAfeature/mawilab_label_10w.npy"
     data = np.load(data_path).astype(np.float64)
     labels = np.load(labels_path)
     ff = open("./msnm_mawilab.md", "w")
     lst = [180, 450, 900, 1800, 4500, 9000, 18000]
 
-for label_train_size in lst:
+for label_train_size in [180]:  # lst:
     if IDS:
         test_size = 29999
         train_size = 270000
@@ -57,8 +57,8 @@ for label_train_size in lst:
     print("training.....")
     if IDS:
         n_component = 15
-    else:
-        n_component = 50
+    else:  # mawilab
+        n_component = 1
     K = 10
     rc = 0.01
     epoch = 5

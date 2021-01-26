@@ -1,11 +1,15 @@
 import torch
 from torch import autograd
 import numpy as np
-import newCNN
 from torch.autograd import Variable
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import torch
 import torch.nn.functional as F
+
+import sys
+
+sys.path.append("../..")
+import newCNN
 
 batch_size = 8
 
@@ -82,7 +86,7 @@ def train(stu, teacher, train_data, train_labels, optimizer, epoch, step_counter
         # ema_class_loss = classify_loss_function(ema_logit, targets) / num
         consistency_loss = consistency_weight * consistency_criterion(cons_logit, ema_logit) / num
 
-        loss = class_loss# + consistency_loss
+        loss = class_loss  # + consistency_loss
 
         optimizer.zero_grad()
         loss.backward()
@@ -125,23 +129,14 @@ def Test(model, test, test_label, test_size):
     return f1, precision, recall, acc
 
 
-# 30 w
-# data_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\data_30w_des.tsv.npy"
-# labels_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\labels_30w_des.csv.npy"
-# data = np.load(data_path).astype(np.float32)
-# labels = np.load(labels_path)
-#
-# ff = open("../data/res_mean_ids.md", "w")
-
-data_path = "./data/mawilab_ga.npy"
-labels_path = "./data/mawilab_label_10w.npy"
+data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
+labels_path = "../../MAWILab-GAfeature/mawilab_label_10w.npy"
 data = np.load(data_path)
 labels = np.load(labels_path)
 
-ff = open("./data/res_mean.md", "w")
+ff = open("./res_mean-teacher.md", "w")
 
-# for label_train_size in [270, 540, 1350, 2700, 5400, 13500, 27000, 270000]:
-for label_train_size in [180]: # 450, 900, 1800, 4500, 9000, 18000, 90000]:  #[90000]:
+for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
     step_counter = 0
     stu = newCNN.Model(data.shape[1])
     teacher = newCNN.Model(data.shape[1])
