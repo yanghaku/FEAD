@@ -19,7 +19,7 @@ class FEAD:
     def fit(self, X, Y):
         data = X
         label = Y
-        n_epochs = 4
+        n_epochs = 10
         batch_size = 8
         self.model.train()
         train_size = len(X)
@@ -39,7 +39,9 @@ class FEAD:
                                   requires_grad=False).view(-1, 1, self.sz)
                 targets = Variable(label[i * batch_size:min((i + 1) * batch_size, train_size)],
                                    requires_grad=False)
-
+                num = min((i + 1) * batch_size, train_size) - i * batch_size
+                if num < batch_size:
+                    break
                 outputs = self.model(inputs)
                 _, pred = torch.max(outputs.data, 1)
                 self.optimizer.zero_grad()
@@ -66,8 +68,11 @@ class FEAD:
         for i in range(test_batch):
             inputs = Variable(data[i * batch_size:min((i + 1) * batch_size, test_size), :],
                               requires_grad=False).view(-1, 1, self.sz)
+            num = min((i + 1) * batch_size, test_size) - i * batch_size
+            if num < batch_size:
+                break
             outputs = self.model(inputs)
-            # _, pred = torch.max(outputs.data, 1)
-            prediction[i * batch_size:min((i + 1) * batch_size, test_size)] = np.argmax(outputs.data.cpu().numpy(),
-                                                                                        axis=1)
+            pred = np.argmax(outputs.data.cpu().numpy(), axis=1)
+            prediction[i * batch_size:min((i + 1) * batch_size, test_size)] = pred
+
         return prediction

@@ -149,7 +149,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
         loss_sum = 0
         for batch in loader_mixmatch:
             num = num + batch_size * 3
-            inputs = Variable(batch['features'].to(device), requires_grad=False).view(-1, 1, 140)
+            inputs = Variable(batch['features'].to(device), requires_grad=False).view(-1, 1, data.shape[1])
             label = Variable(batch['targets'].to(device), requires_grad=False)
             logits = model(inputs)
             loss = criterion(logits, label)

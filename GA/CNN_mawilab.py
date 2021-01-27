@@ -4,7 +4,7 @@ import torch
 from torch.autograd import Variable
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
-Epoch = 10
+Epoch = 4
 batch_size = 8
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -70,13 +70,11 @@ class CNN_mawilab:
         test_batchs = self.test_size // batch_size
         data_test = torch.from_numpy(data[self.train_size:self.train_size + self.test_size]).to(device)
         label_test = torch.from_numpy(label[self.train_size:self.train_size + self.test_size]).to(device)
-
         model.train()
         for epoch in range(Epoch):
             train_indices = np.random.permutation(self.train_size)
             data_train = torch.from_numpy(data[train_indices]).to(device)
             label_train = torch.from_numpy(label[train_indices]).to(device)
-
             for i in range(train_batchs):
                 inputs = Variable(data_train[i * batch_size:min((i + 1) * batch_size, self.train_size), :],
                                   requires_grad=False).view(-1, 1, data.shape[1])
