@@ -57,6 +57,7 @@ class PSO:
                     self.pop[i].lBestPosition = self.pop[i].position
 
             for p in self.pop:
+                print("pos=", p.position, "f1=", p.fit, self.cnn_test.bin2name(p.position))
                 if p.fit > self.best_fit:
                     self.best_fit = p.fit
                     self.best_pos = p.position
@@ -67,5 +68,5 @@ class PSO:
 
 w = 1
 c1 = c2 = 2
-num = 50
+num = 20
 p = PSO(num, w, c1, c2)

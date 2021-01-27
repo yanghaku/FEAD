@@ -1,7 +1,6 @@
 from MSNM import MSNM
 import numpy as np
 from sklearn.metrics import f1_score, precision_score, accuracy_score, recall_score, roc_auc_score
-from sklearn.preprocessing import StandardScaler
 from matplotlib import pyplot as plt
 
 IDS = False
@@ -22,7 +21,7 @@ else:
     ff = open("./msnm_mawilab.md", "w")
     lst = [180, 450, 900, 1800, 4500, 9000, 18000]
 
-for label_train_size in [180]:  # lst:
+for label_train_size in [5400]:  # lst:
     if IDS:
         test_size = 29999
         train_size = 270000
@@ -42,13 +41,11 @@ for label_train_size in [180]:  # lst:
     labeled_train = all_train_data[0:label_train_size, :]
     train_label = all_train_label[0:label_train_size]
 
-    unlabeled_train = all_train_data[label_train_size: train_size, :]
-    unlabeled_label = all_train_label[label_train_size: train_size]
     unlabeled_id = []
-    for i in range(unlabeled_label.shape[0]):
-        if unlabeled_label[i] == 0:
+    for i in range(train_label.shape[0]):
+        if train_label[i] == 0:
             unlabeled_id.append(i)
-    unlabeled_train = unlabeled_train[unlabeled_id]
+    unlabeled_train = labeled_train[unlabeled_id]
 
     all_test_data = data[train_size:train_size + test_size, :]
     all_test_label = labels[train_size:train_size + test_size]
@@ -58,7 +55,7 @@ for label_train_size in [180]:  # lst:
     if IDS:
         n_component = 15
     else:  # mawilab
-        n_component = 1
+        n_component = 2
     K = 10
     rc = 0.01
     epoch = 5
@@ -78,10 +75,12 @@ for label_train_size in [180]:  # lst:
     print("auc = ", auc)
 
     # predict = model.predict(all_test_data)
-    x = model.pca.threshold
+
+    threshold = np.quantile(model.pca.fit_anomaly_score, 0.999)
+    print(label_train_size, threshold)
     predict = []
     for i in scores:
-        if i > x:
+        if i > threshold:
             predict.append(1)
         else:
             predict.append(0)

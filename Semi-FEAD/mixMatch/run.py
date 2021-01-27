@@ -74,7 +74,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
     dataset_unlabeled = torch.utils.data.TensorDataset(torch.from_numpy(unlabeled_train))
     # loader_labeled = DataLoad(torch.from_numpy(labeled_train), torch.from_numpy(train_label), batch_size)# 1
     loader_labeled = DataLoad(labeled_train, train_label, batch_size)
-    model = newCNN.Model(140)
+    model = newCNN.Model(data.shape[1])
     cost = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.00001, weight_decay=0.01)  # 0.00001,0.01
 
@@ -90,7 +90,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
         for i in range(train_batch):
             inputs = Variable(
                 torch.from_numpy(labeled_train[i * batch_size:min((i + 1) * batch_size, label_train_size)]),
-                requires_grad=False).view(-1, 1, 140)
+                requires_grad=False).view(-1, 1, data.shape[1])
             targets = Variable(
                 torch.from_numpy(train_label[i * batch_size:min((i + 1) * batch_size, label_train_size)]),
                 requires_grad=False)
@@ -164,7 +164,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
             index = random.randint(0, train_batch - 1)
             inputs = Variable(
                 torch.from_numpy(labeled_train[index * batch_size:min((index + 1) * batch_size, label_train_size)]),
-                requires_grad=False).view(-1, 1, 140)
+                requires_grad=False).view(-1, 1, data.shape[1])
             targets = Variable(
                 torch.from_numpy(train_label[index * batch_size:min((index + 1) * batch_size, label_train_size)]),
                 requires_grad=False)

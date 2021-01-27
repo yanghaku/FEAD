@@ -21,10 +21,10 @@ class CNN_mawilab:
         for i in range(x.shape[0]):
             x[i] = np.nan
         self.F1s = x.copy()
+        self.FPRs = x.copy()
+        self.Precisions = x.copy()
+        self.Recalls = x.copy()
 
-        # self.FPRs = x.copy()
-        # self.Precisions = x.copy()
-        # self.Recalls = x.copy()
         # self.F1s = np.load("./data/F1s_mawilab.npy")
         # self.Precisions = np.load("./data/Precisions_mawilab.npy")
         # self.Recalls = np.load("./data/Recalls_mawilab.npy")
@@ -158,9 +158,9 @@ class CNN_mawilab:
 
         f1, precision, recall, fpr = self.train_test(self.mawilab_data_all[:, sub], self.mawilab_label)
         self.F1s[bin] = f1
-        # self.Precisions[bin] = precision
-        # self.Recalls[bin] = recall
-        # self.FPRs[bin] = fpr
+        self.Precisions[bin] = precision
+        self.Recalls[bin] = recall
+        self.FPRs[bin] = fpr
 
         # if is_save:
         #     np.save("./data/F1s_mawilab.npy", self.F1s)

@@ -35,8 +35,8 @@ if __name__ == "__main__":
     res = model.predict(data_test)
 
     accuracy = accuracy_score(label_test, res)
-    precision = precision_score(res, label_test)
-    recall = recall_score(res, label_test)
-    f1 = f1_score(res, label_test)
+    precision = precision_score(label_test, res)
+    recall = recall_score(label_test, res)
+    f1 = f1_score(label_test, res)
 
     print("Precision  = ", precision, "TPR = ", recall, "F1-score", f1)

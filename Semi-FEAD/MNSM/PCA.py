@@ -17,7 +17,6 @@ class PCA:
         self.ucl_Q = None  # 训练的数据集的Q统计量的上99%分位数
         self.ucl_D = None  # 训练的数据集的D统计量的上99%分位数
         self.fit_anomaly_score = None  # 训练集的异常分数
-        self.threshold = None  # 训练集的异常分数获取的阈值
 
     # X 是n*m的矩阵, n行m列, 每行是一个样本, 每个样本的维度为m
     # 将样本的维度从m降为n_components
@@ -59,7 +58,6 @@ class PCA:
         self.ucl_Q = np.quantile(self.fit_Q, 0.99)
 
         self.fit_anomaly_score = self.anomaly_score(self.fit_D, self.fit_Q)
-        self.threshold = max(self.fit_anomaly_score)
         # 返回分数矩阵
         return score
 

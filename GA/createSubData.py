@@ -3,7 +3,7 @@ import numpy as np
 # 根据特征子集从全部特征的data文件生成对应的特征
 
 
-feature = 780
+feature = 4057
 
 full_data = np.load("../MAWILab-GAfeature/mawilab_10w.npy")
 slides = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],

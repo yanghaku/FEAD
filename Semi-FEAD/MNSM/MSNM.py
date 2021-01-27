@@ -38,13 +38,13 @@ class MSNM:
         scores = self.pca.anomaly_score(Dst, Qst)
         return scores
 
-    # def predict(self, X):
-    #     X = X - X.mean(0)
-    #     pre = []
-    #     for i in X:
-    #         Dst, Qst = self.pca.Dst_Qst(i)
-    #         if Dst > self.pca.ucl_D and Qst > self.pca.ucl_Q:
-    #             pre.append(1)
-    #         else:
-    #             pre.append(0)
-    #     return pre
+    def predict(self, X):
+        Dst, Qst = self.pca.Dst_Qst(X, self.pca_w)
+        l = Dst.shape[0]
+        pre = np.empty(l)
+        for i in range(l):
+            if Qst[i] > self.pca.ucl_Q or Dst[i] > self.pca.ucl_D:
+                pre[i] = 1
+            else:
+                pre[i] = 0
+        return pre
