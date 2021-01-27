@@ -19,7 +19,7 @@ class FEAD:
     def fit(self, X, Y):
         data = X
         label = Y
-        n_epochs = 15
+        n_epochs = 1
         batch_size = 8
         self.model.train()
         train_size = len(X)

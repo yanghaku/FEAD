@@ -37,7 +37,7 @@ def symmetric_mse_loss(input1, input2):
 
 def noise(input):
     Size = len(input)
-    a = np.random.normal(0.0, scale=0.5, size=(Size, 60))
+    a = np.random.normal(0.0, scale=0.5, size=(Size, 155))
     return (input + a).astype(np.float32)
 
 

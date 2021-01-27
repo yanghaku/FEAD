@@ -19,12 +19,16 @@ def mixmatch_batch(
             + Drift(max_drift=(0.1, 0.5))
             #+ Reverse()
     )
-    new = np.zeros((16,155))
+    # new = np.zeros((16,155))
+    new = None
     num = 0
     for u in features_unlabeled:
         #print(len(u.numpy().tolist()))
         x = my_augmenter.augment(u.numpy())
-        new[num,:] =x
+        if new is None:
+            new = x.unsqueeze(0)
+        else:
+            new = np.stack(new, x.unsqueeze(0))
         num = num + 1
     features_unlabeled = torch.from_numpy(new.astype(np.float32))
 
