@@ -4,4 +4,4 @@ test/*
 *__pycache__/
 */mawilab_10w.npy
 *res*.md
-*msnm_mawilab.md
+*msnm_*.md

@@ -12,6 +12,9 @@ if IDS:
     labels = np.load(labels_path)
     ff = open("./msnm_ids.md", "w")
     lst = [270, 540, 1350, 2700, 5400, 13500, 27000]
+    threshold_precent = 1
+    n_component = 15
+
 
 else:
     data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
@@ -20,6 +23,8 @@ else:
     labels = np.load(labels_path)
     ff = open("./msnm_mawilab.md", "w")
     lst = [180, 450, 900, 1800, 4500, 9000, 18000]
+    n_component = 2
+    threshold_precent = 0.8
 
 for label_train_size in lst:  # lst:
     if IDS:
@@ -52,10 +57,7 @@ for label_train_size in lst:  # lst:
 
     model = MSNM(data.shape[1])
     print("training.....")
-    if IDS:
-        n_component = 15
-    else:  # mawilab
-        n_component = 2
+
     K = 10
     rc = 0.01
     epoch = 5
@@ -70,12 +72,19 @@ for label_train_size in lst:  # lst:
             c.append('r')
         else:
             c.append('g')
-    plt.scatter(range(len(scores)), scores, c=c)
-    plt.show()
+    # plt.scatter(range(len(scores)), scores, c=c)
+    # plt.show()
     print("auc = ", auc)
 
-    predict = model.predict(all_test_data, 0.9, 0.9)
+    threshold = np.quantile(model.pca.fit_anomaly_score, threshold_precent)
+    print("threshold = ", threshold)
 
+    predict = np.empty(test_size)
+    for i in range(test_size):
+        if scores[i] > threshold:
+            predict[i] = 1
+        else:
+            predict[i] = 0
     TP = 0
     FP = 0
     TN = 0

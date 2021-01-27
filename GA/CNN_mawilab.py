@@ -4,7 +4,7 @@ import torch
 from torch.autograd import Variable
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
-Epoch = 4
+Epoch = 10
 batch_size = 8
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

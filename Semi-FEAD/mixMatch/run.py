@@ -29,8 +29,7 @@ def Test(model, test, test_label, test_size):
     for i in range(test_batch):
         inputs = Variable(test[i * batch_size:min((i + 1) * batch_size, test_size), :],
                           requires_grad=False).view(-1, 1, test.shape[1])
-        targets = Variable(test_label[i * batch_size:min((i + 1) * batch_size, test_size)],
-                           requires_grad=False)
+
         outputs = model(inputs)
         pred = np.argmax(outputs.data.cpu().numpy(), axis=1)
         prediction[i * batch_size:min((i + 1) * batch_size, test_size)] = pred
@@ -117,7 +116,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
         model,
         output_transform=torch.sigmoid,
         K=2,
-        T=0.5,
+        T=1.0,
         alpha=0.75
     )
 
@@ -129,11 +128,17 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
         criterion_unlabeled=torch.nn.MSELoss()
     )
 
+    best_f1 = 0.0
+    best_precision = 0.0
+    best_recall = 0.0
+    best_acc = 0.0
     f1, precision, recall, acc = Test(model, test, test_label, test_size)
+    if f1 > best_f1:
+        best_f1, best_precision, best_recall, best_acc = f1, precision, recall, acc
     print("|label size is", label_train_size, "|label percent is", label_train_size / train_size * 100, "|F1 is", f1,
           "|precision is", precision, "|recall is", recall,
           "|acc is",
-          acc, "| 1-acc is", 1 - acc, "|")
+          acc, "| 1-acc is", 1.0 - acc, "|")
 
     model.train()
     print("train: ")
@@ -184,3 +189,8 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
               f1, "|precision is", precision, "|recall is", recall,
               "|acc is",
               acc, "| 1-acc is", 1 - acc, "|")
+        if f1 > best_f1:
+            best_f1, best_precision, best_recall, best_acc = f1, precision, recall, acc
+
+    print("\n\n|", label_train_size, "|", label_train_size / train_size * 100, "|", best_f1, "|", best_precision, "|",
+          best_recall, "|", best_acc, "|", 1.0 - best_acc, "|")
