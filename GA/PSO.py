@@ -70,3 +70,4 @@ w = 1
 c1 = c2 = 2
 num = 20
 p = PSO(num, w, c1, c2)
+p.solve(20)

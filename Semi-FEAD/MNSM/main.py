@@ -21,7 +21,7 @@ else:
     ff = open("./msnm_mawilab.md", "w")
     lst = [180, 450, 900, 1800, 4500, 9000, 18000]
 
-for label_train_size in [5400]:  # lst:
+for label_train_size in lst:  # lst:
     if IDS:
         test_size = 29999
         train_size = 270000
@@ -74,16 +74,8 @@ for label_train_size in [5400]:  # lst:
     plt.show()
     print("auc = ", auc)
 
-    # predict = model.predict(all_test_data)
+    predict = model.predict(all_test_data, 0.9, 0.9)
 
-    threshold = np.quantile(model.pca.fit_anomaly_score, 0.999)
-    print(label_train_size, threshold)
-    predict = []
-    for i in scores:
-        if i > threshold:
-            predict.append(1)
-        else:
-            predict.append(0)
     TP = 0
     FP = 0
     TN = 0

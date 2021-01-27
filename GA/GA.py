@@ -67,6 +67,5 @@ n_generations = 20  # 迭代次数, 后代数量
 pop_size = 40  # 种群个数
 
 g = GA(DNA_size, pop_size, cross_rate, mutation_rate, n_generations)
-g.cnn_test._run(780)
-print(g.cnn_test.F1s[780])
+
 g.run()

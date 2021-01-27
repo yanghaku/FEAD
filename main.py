@@ -22,10 +22,6 @@ if __name__ == "__main__":
     all_train = data[0:train_size, :]
     all_train_label = labels[0:train_size]
 
-    # dice = np.random.permutation(80000)
-    # all_train = all_train[dice,:]
-    # all_train_label = all_train_label[dice]
-
     data_train = all_train[0:train_size, :]
     data_test = data[LEN - test_size:LEN, :]
     label_train = all_train_label[0:train_size]
@@ -34,9 +30,27 @@ if __name__ == "__main__":
     model.fit(data_train, label_train)
     res = model.predict(data_test)
 
+    TN = 0
+    FN = 0
+    TP = 0
+    FP = 0
+    for j in range(len(res)):
+        if res[j] == 0:
+            if label_test[j] == 0:
+                TN = TN + 1
+            else:
+                FN += 1
+        else:
+            if label_test[j] == 0:
+                FP = FP + 1
+            else:
+                TP += 1
     accuracy = accuracy_score(label_test, res)
     precision = precision_score(label_test, res)
     recall = recall_score(label_test, res)
     f1 = f1_score(label_test, res)
-
-    print("Precision  = ", precision, "TPR = ", recall, "F1-score", f1)
+    if TN + FP > 0:
+        fpr = FP / (TN + FP)
+    else:
+        fpr = 0
+    print("Precision = ", precision, "Recall = ", recall, "F1-score = ", f1, "FPR=", fpr)

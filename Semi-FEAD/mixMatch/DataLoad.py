@@ -14,7 +14,7 @@ class DataLoad:
 
         self.my_augmenter = (
                 TimeWarp()
-                + Crop(size=140)
+                + Crop(size=155)
                 + Quantize(n_levels=[10, 20, 30])
                 + Drift(max_drift=(0.1, 0.5))
                 #+ Reverse()

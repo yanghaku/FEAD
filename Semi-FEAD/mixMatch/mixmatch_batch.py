@@ -14,12 +14,12 @@ def mixmatch_batch(
     from tsaug import TimeWarp, Crop, Quantize, Drift, Reverse
     my_augmenter = (
             TimeWarp()
-            + Crop(size=140)
+            + Crop(size=155)
             + Quantize(n_levels=[10, 20, 30])
             + Drift(max_drift=(0.1, 0.5))
             #+ Reverse()
     )
-    new = np.zeros((16,140))
+    new = np.zeros((16,155))
     num = 0
     for u in features_unlabeled:
         #print(len(u.numpy().tolist()))
