@@ -1,11 +1,5 @@
 import numpy as np
-import newCNN
-import time
-import pandas as pd
-import torch
-from torch.autograd import Variable
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-import sklearn as sk
 import FEAD
 
 data_path = "./MAWILab-GAfeature/mawilab_ga.npy"
