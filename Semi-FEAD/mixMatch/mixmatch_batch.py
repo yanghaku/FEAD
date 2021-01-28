@@ -12,12 +12,13 @@ def mixmatch_batch(
     targets_labeled = batch['targets'].to(device)
     features_unlabeled = batch_unlabeled[0]  # ['features']
     # print("!!!!")
-    from tsaug import TimeWarp, Crop, Quantize, Drift, Reverse
+    from tsaug import TimeWarp, Crop, Quantize, Drift, Reverse, AddNoise
     my_augmenter = (
-            TimeWarp()
-            + Crop(size=155)
-            + Quantize(n_levels=[10, 20, 30])
-            + Drift(max_drift=(0.1, 0.5))
+            # TimeWarp()
+            # + Crop(size=155)
+            # + Quantize(n_levels=[10, 20, 30])
+            AddNoise(scale=0.001)
+            # + Drift(max_drift=(0.01, 3))
         # + Reverse()
     )
     # new = np.zeros((16,155))

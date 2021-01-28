@@ -174,13 +174,12 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
     new_data = train_data[indices, :]
     new_label = all_label_train[indices].astype(np.longlong)
 
-    optimizer = torch.optim.Adam(stu.parameters(), lr=0.00001, weight_decay=0.01)  # 0.00001,0.01
-    # optimizer = torch.optim.SGD(stu.parameters(), lr=0.01, momentum=0.05)
+    optimizer = torch.optim.Adam(stu.parameters(), lr=0.001)  # 0.00001,0.01
     f1 = 0
     precision = 0
     recall = 0
     acc = 0
-    for epoch in range(1):
+    for epoch in range(10):
         print("epoch: ", epoch)
         train(stu, teacher, new_data, new_label, optimizer, epoch, step_counter)
 

@@ -14,12 +14,12 @@ class FEAD:
         self.sz = sz
         self.model = newCNN.Model(sz).to(device)
         self.cost = torch.nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.00001, weight_decay=0.01)  # 0.00001,0.01
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)  # 0.00001,0.01
 
     def fit(self, X, Y):
         data = X
         label = Y
-        n_epochs = 15
+        n_epochs = 4
         batch_size = 8
         self.model.train()
         train_size = len(X)

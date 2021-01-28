@@ -131,9 +131,9 @@ labels_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\labels_30w_des.cs
 data = np.load(data_path).astype(np.float32)
 labels = np.load(labels_path)
 
-ff = open("data/res_mean_ids.md", "w")
+ff = open("./res_mean_ids.md", "w")
 
-for label_train_size in [270, 540, 1350, 2700, 5400, 13500, 27000, 270000]:
+for label_train_size in [270, 540, 1350, 2700, 5400, 13500, 27000]:
     step_counter = 0
     stu = newCNN.Model(data.shape[1])
     teacher = newCNN.Model(data.shape[1])
@@ -169,13 +169,12 @@ for label_train_size in [270, 540, 1350, 2700, 5400, 13500, 27000, 270000]:
     new_data = train_data[indices, :]
     new_label = all_label_train[indices].astype(np.longlong)
 
-    optimizer = torch.optim.Adam(stu.parameters(), lr=0.00001, weight_decay=0.01)  # 0.00001,0.01
-    # optimizer = torch.optim.SGD(stu.parameters(), lr=0.01, momentum=0.05)
+    optimizer = torch.optim.Adam(stu.parameters(), lr=0.001)  # 0.00001,0.01
     f1 = 0
     precision = 0
     recall = 0
     acc = 0
-    for epoch in range(1):
+    for epoch in range(10):
         print("epoch: ", epoch)
         train(stu, teacher, new_data, new_label, optimizer, epoch, step_counter)
 

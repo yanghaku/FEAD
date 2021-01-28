@@ -25,7 +25,7 @@ labels = np.load(labels_path)
 def Test(model, test, test_label, test_size):
     model.eval()
     test_batch = test_size // batch_size
-    prediction = np.zeros(test_size, dtype=np.uint8)
+    prediction = np.zeros(  test_size, dtype=np.uint8)
     for i in range(test_batch):
         inputs = Variable(test[i * batch_size:min((i + 1) * batch_size, test_size), :],
                           requires_grad=False).view(-1, 1, test.shape[1]).to(device)
@@ -72,12 +72,12 @@ for label_train_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  # [
     loader_labeled = DataLoad(labeled_train, train_label, batch_size)
     model = newCNN.Model(data.shape[1]).to(device)
     cost = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.00001, weight_decay=0.01)  # 0.00001,0.01
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)  # 0.00001,0.01
 
     # train model use labeled data
     print("pre-train")
     model.train()
-    n_epochs = 10
+    n_epochs = 40
     train_batch = label_train_size // batch_size
 
     for epoch in range(n_epochs):
@@ -112,16 +112,16 @@ for label_train_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  # [
         dataset_unlabeled,
         model,
         output_transform=torch.sigmoid,
-        K=5,
+        K=4,
         T=1.0,
-        alpha=0.9
+        alpha=0.75
     )
 
     criterion = get_mixmatch_loss(
         criterion_labeled=torch.nn.BCEWithLogitsLoss(),
         output_transform=torch.sigmoid,
-        K=2,
-        weight_unlabeled=100.,  # 100.
+        K=4,
+        weight_unlabeled=10.,  # 100.
         criterion_unlabeled=torch.nn.MSELoss()
     )
 
@@ -144,7 +144,7 @@ for label_train_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  # [
     # loss_sum = 0
     # running_correct = 0
     # num = 0
-    for epoch in range(100):
+    for epoch in range(20):
         print("the ", epoch, " th epoch")
         num = 0
         running_correct = 0
