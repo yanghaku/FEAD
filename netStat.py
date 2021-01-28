@@ -1,9 +1,13 @@
 import numpy as np
 ## Prep AfterImage cython package
 import pyximport
+import sys
 
-mingw_setup_args = {'options': {'build_ext': {'compiler': 'mingw32'}}}
-pyximport.install(setup_args=mingw_setup_args)
+if sys.platform == 'linux':
+    pyximport.install()
+else:
+    mingw_setup_args = {'options': {'build_ext': {'compiler': 'mingw32'}}}
+    pyximport.install(setup_args=mingw_setup_args)
 
 import AfterImage as af
 
