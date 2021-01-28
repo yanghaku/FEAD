@@ -10,20 +10,16 @@ RANDOM = 2020
 
 
 class TriTraining:
-    def __init__(self):
-        # if sklearn.base.is_classifier(classifier):
-        #     self.classifiers = [sklearn.base.clone(classifier) for i in range(3)]
-        # else:
-        #     self.classifiers = [sklearn.base.clone(classifier[i]) for i in range(3)]
+    def __init__(self, sz):
         self.classifiers = [0, 0, 0]
-        self.classifiers[0] = FEAD.FEAD()
-        self.classifiers[1] = FEAD.FEAD()
-        self.classifiers[2] = FEAD.FEAD()
+        self.classifiers[0] = FEAD.FEAD(sz)
+        self.classifiers[1] = FEAD.FEAD(sz)
+        self.classifiers[2] = FEAD.FEAD(sz)
 
     def fit(self, L_X, L_y, U_X):
         for i in range(3):
             sample = sklearn.utils.resample(L_X, L_y)
-            print("sample size is", sample[0].shape)
+            # print("sample size is", sample[0].shape)
             self.classifiers[i].fit(*sample)
         e_prime = [0.5] * 3
         l_prime = [0] * 3
@@ -35,16 +31,16 @@ class TriTraining:
 
         while improve:
             self.iter += 1  # count iterations
-            print("the iter is", self.iter)
+            # print("the iter is", self.iter)
             for i in range(3):
                 j, k = np.delete(np.array([0, 1, 2]), i)
                 update[i] = False
                 e[i] = self.measure_error(L_X, L_y, j, k)
-                print("the e[i] is", e[i])
+                # print("the e[i] is", e[i])
                 if e[i] < e_prime[i]:
                     U_y_j = self.classifiers[j].predict(U_X)
                     U_y_k = self.classifiers[k].predict(U_X)
-                    print("Uyj and Uyk is", sum(U_y_j == U_y_k))
+                    # print("Uyj and Uyk is", sum(U_y_j == U_y_k))
                     Li_X[i] = U_X[U_y_j == U_y_k]  # when two models agree on the label, save it
                     Li_y[i] = U_y_j[U_y_j == U_y_k]
                     if l_prime[i] == 0:  # no updated before
@@ -59,7 +55,7 @@ class TriTraining:
 
             for i in range(3):
                 if update[i]:
-                    print("the Li_X is", len(Li_X[i]))
+                    # print("the Li_X is", len(Li_X[i]))
                     self.classifiers[i].fit(np.append(L_X, Li_X[i], axis=0), np.append(L_y, Li_y[i], axis=0))
                     e_prime[i] = e[i]
                     l_prime[i] = len(Li_y[i])
@@ -80,7 +76,7 @@ class TriTraining:
         k_pred = self.classifiers[k].predict(X)
         # print(j_pred)
         # print(k_pred)
-        print(sum(j_pred == k_pred))
+        # print(sum(j_pred == k_pred))
 
         wrong_index = np.logical_and(j_pred != y, k_pred == j_pred)
         # wrong_index =np.logical_and(j_pred != y_test, k_pred!=y_test)
@@ -96,7 +92,7 @@ labels = np.load(labels_path)
 
 ff = open("./res_tri-training.md", "w")
 
-for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:
+for label_train_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:
     test_size = 10000
     train_size = 90000
     # test_size = 29999
@@ -105,11 +101,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:
     unlabel_train_size = train_size - label_train_size
 
     train_data = data[0:train_size]
-    # train_label = labels[0:train_size]
-
-    ran_dice = np.random.permutation(train_size)
-    train_data = train_data[ran_dice]
-    train_label = labels[ran_dice]
+    train_label = labels[0:train_size]
 
     # labeled_train = data[0:label_train_size,:]
     # train_label = labels[0:label_train_size]
@@ -122,22 +114,24 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:
     test = data[train_size:train_size + test_size, :]
     test_label = labels[train_size:train_size + test_size]
 
-    TT = TriTraining()
+    TT = TriTraining(data.shape[1])
     TT.fit(labeled_train, train_label, unlabeled_train)
     res = TT.predict(test)
 
     accuracy = accuracy_score(test_label, res)
-    precision = precision_score(res, test_label)
-    recall = recall_score(res, test_label)
-    f1 = f1_score(res, test_label)
-    test_error = 1 - accuracy
-    PRECISION = []
-    RECALL = []
-    F1 = []
-    PRECISION.append(precision)
-    RECALL.append(recall)
-    F1.append(f1)
+    precision = precision_score(test_label, res)
+    recall = recall_score(test_label, res)
+    f1 = f1_score(test_label, res)
+    test_error = 1.0 - accuracy
+    # PRECISION = []
+    # RECALL = []
+    # F1 = []
+    # PRECISION.append(precision)
+    # RECALL.append(recall)
+    # F1.append(f1)
     print("|", label_train_size, "|", label_train_size / train_size * 100, "|", f1, "|", precision, "|", recall, "|",
-          accuracy, "|", 1 - accuracy, "|", file=ff)
+          accuracy, "|", test_error, "|")
+    print("|", label_train_size, "|", label_train_size / train_size * 100, "|", f1, "|", precision, "|", recall, "|",
+          accuracy, "|", test_error, "|", file=ff)
 
 ff.close()

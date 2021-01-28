@@ -11,6 +11,9 @@ import sys
 sys.path.append("../..")
 import newCNN
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("device is: ", device)
+
 batch_size = 8
 
 
@@ -37,8 +40,8 @@ def symmetric_mse_loss(input1, input2):
 
 def noise(input):
     Size = len(input)
-    a = np.random.normal(0.0, scale=0.5, size=(Size, 155))
-    return (input + a).astype(np.float32)
+    a = torch.from_numpy(np.random.normal(0.0, scale=0.5, size=(Size, 155)).astype(np.float32)).to(device)
+    return (input + a)
 
 
 def train(stu, teacher, train_data, train_labels, optimizer, epoch, step_counter):
@@ -57,13 +60,13 @@ def train(stu, teacher, train_data, train_labels, optimizer, epoch, step_counter
     consistency_loss = 0
     for i in range(train_batch):
         input1 = autograd.Variable(
-            torch.from_numpy((train_data[i * batch_size:min((i + 1) * batch_size, train_size), :])),
+            (train_data[i * batch_size:min((i + 1) * batch_size, train_size), :]),
             requires_grad=False).view(-1, 1, train_data.shape[1])
         input2 = autograd.Variable(
-            torch.from_numpy(noise(train_data[i * batch_size:min((i + 1) * batch_size, train_size), :])),
+            noise(train_data[i * batch_size:min((i + 1) * batch_size, train_size), :]),
             requires_grad=False).view(-1, 1, train_data.shape[1])
         targets = autograd.Variable(
-            torch.from_numpy(train_labels[i * batch_size:min((i + 1) * batch_size, train_size)]),
+            train_labels[i * batch_size:min((i + 1) * batch_size, train_size)],
             requires_grad=False)
 
         num = min((i + 1) * batch_size, train_size) - i * batch_size + 1
@@ -96,8 +99,8 @@ def train(stu, teacher, train_data, train_labels, optimizer, epoch, step_counter
         update_teacher_variables(stu, teacher, alpha, step_counter)
 
     print("epoch: {} , epoch_loss: {:.3f}".format(epoch, epoch_loss))
-    print("loss, class_loss, consistency_loss: ", loss.data.numpy(), class_loss.data.numpy(),
-          consistency_loss.data.numpy())
+    print("loss, class_loss, consistency_loss: ", loss.data.cpu().numpy(), class_loss.data.cpu().numpy(),
+          consistency_loss.data.cpu().numpy())
 
     return step_counter
 
@@ -109,8 +112,6 @@ def Test(model, test, test_label, test_size):
     for i in range(test_batch):
         inputs = Variable(test[i * batch_size:min((i + 1) * batch_size, test_size), :],
                           requires_grad=False).view(-1, 1, test.shape[1])
-        targets = Variable(test_label[i * batch_size:min((i + 1) * batch_size, test_size)],
-                           requires_grad=False)
 
         num = min((i + 1) * batch_size, test_size) - i * batch_size
         if num < batch_size:
@@ -137,57 +138,72 @@ labels = np.load(labels_path)
 ff = open("./res_mean-teacher.md", "w")
 
 for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
-    step_counter = 0
-    stu = newCNN.Model(data.shape[1])
-    teacher = newCNN.Model(data.shape[1])
-    for param in teacher.parameters():
-        param.detach_()
-
-    # test_size = 29999
-    # train_size = 270000
+    F1s = []
+    Precisions = []
+    Recalls = []
+    ACCs = []
+    number = 10  # 取10次均值
     test_size = 10000
     train_size = 90000
-    unlabel_train_size = train_size - label_train_size
+    for __ in range(number):
+        step_counter = 0
+        stu = newCNN.Model(data.shape[1]).to(device)
+        teacher = newCNN.Model(data.shape[1]).to(device)
+        for param in teacher.parameters():
+            param.detach_()
 
-    all_train_data = data[0:train_size, :]
-    all_train_label = labels[0:train_size]
+        # test_size = 29999
+        # train_size = 270000
+        unlabel_train_size = train_size - label_train_size
 
-    ran_dice = np.random.permutation(train_size)
-    all_train_data = all_train_data[ran_dice, :]
-    all_train_label = all_train_label[ran_dice]
+        all_train_data = data[0:train_size, :]
+        all_train_label = labels[0:train_size]
 
-    labeled_train = all_train_data[0:label_train_size, :]
-    train_label = all_train_label[0:label_train_size]
+        # ran_dice = np.random.permutation(train_size)
+        # all_train_data = all_train_data[ran_dice, :]
+        # all_train_label = all_train_label[ran_dice]
 
-    # unlabeled_train = data[label_train_size:label_train_size+unlabel_train_size,:]
-    unlabeled_train = all_train_data[label_train_size: train_size, :]
-    unlabeled_label = np.array([-1] * unlabel_train_size)
+        labeled_train = all_train_data[0:label_train_size, :]
+        train_label = all_train_label[0:label_train_size]
 
-    test = torch.from_numpy(data[train_size:train_size + test_size, :])
-    test_label = torch.from_numpy(labels[train_size:train_size + test_size])
+        # unlabeled_train = data[label_train_size:label_train_size+unlabel_train_size,:]
+        unlabeled_train = all_train_data[label_train_size: train_size, :]
+        unlabeled_label = np.array([-1] * unlabel_train_size)
 
-    # train_data = data[0:label_train_size+unlabel_train_size,:]
-    train_data = all_train_data
-    all_label_train = np.concatenate((train_label, unlabeled_label))
-    indices = np.random.permutation(label_train_size + unlabel_train_size)
+        test = torch.from_numpy(data[train_size:train_size + test_size, :]).to(device)
+        test_label = torch.from_numpy(labels[train_size:train_size + test_size])
 
-    new_data = train_data[indices, :]
-    new_label = all_label_train[indices].astype(np.longlong)
+        # train_data = data[0:label_train_size+unlabel_train_size,:]
+        train_data = all_train_data
+        all_label_train = np.concatenate((train_label, unlabeled_label))
+        indices = np.random.permutation(label_train_size + unlabel_train_size)
 
-    optimizer = torch.optim.Adam(stu.parameters(), lr=0.001)  # 0.00001,0.01
-    f1 = 0
-    precision = 0
-    recall = 0
-    acc = 0
-    for epoch in range(10):
-        print("epoch: ", epoch)
-        train(stu, teacher, new_data, new_label, optimizer, epoch, step_counter)
+        new_data = torch.from_numpy(train_data[indices, :]).to(device)
+        new_label = torch.from_numpy(all_label_train[indices].astype(np.longlong)).to(device)
 
-        print("test....")
-        f1, precision, recall, acc = Test(stu, test, test_label, test_size)
-        print("|", label_train_size, "|", f1, "|", precision, "|", recall, "|", acc, "|", 1 - acc, "|")
+        optimizer = torch.optim.Adam(stu.parameters(), lr=0.001)  # 0.00001,0.01
+        f1 = 0
+        precision = 0
+        recall = 0
+        acc = 0
+        for epoch in range(4):
+            print("epoch: ", epoch)
+            train(stu, teacher, new_data, new_label, optimizer, epoch, step_counter)
 
+            print("test....")
+            f1, precision, recall, acc = Test(stu, test, test_label, test_size)
+            print("|", label_train_size, "|", f1, "|", precision, "|", recall, "|", acc, "|", 1 - acc, "|")
+
+        F1s.append(f1)
+        Precisions.append(precision)
+        Recalls.append(recall)
+        ACCs.append(acc)
+
+    f1 = sum(F1s) / float(number)
+    precision = sum(Precisions) / float(number)
+    recall = sum(Recalls) / float(number)
+    acc = sum(ACCs) / float(number)
     print("|", label_train_size, "|", label_train_size / train_size * 100, "|", f1, "|", precision, "|", recall, "|",
-          acc, "|", 1 - acc, "|", file=ff)
+          acc, "|", 1.0 - acc, "|", file=ff)
 
 ff.close()
