@@ -1,6 +1,7 @@
 import torch
 from mixmatch_batch import mixmatch_batch
 from get_unlabeled_loader import get_unlabeled_loader
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class MixMatchLoader:

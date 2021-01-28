@@ -27,11 +27,11 @@ if __name__ == "__main__":
     label_train = all_train_label[0:train_size]
     label_test = labels[LEN - test_size:LEN]
 
-    for e in range(16):
-        model.fit(data_train, label_train)
-        res = model.predict(data_test)
-        print("e=", e + 1, "f1=", f1_score(label_test, res))
-
+    # for e in range(16):
+    #     model.fit(data_train, label_train)
+    #     res = model.predict(data_test)
+    #     print("e=", e + 1, "f1=", f1_score(label_test, res))
+    model.fit(data_train, label_train)
     res = model.predict(data_test)
 
     TN = 0

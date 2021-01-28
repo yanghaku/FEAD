@@ -28,7 +28,7 @@ def Test(model, test, test_label, test_size):
     prediction = np.zeros(test_size, dtype=np.uint8)
     for i in range(test_batch):
         inputs = Variable(test[i * batch_size:min((i + 1) * batch_size, test_size), :],
-                          requires_grad=False).view(-1, 1, test.shape[1])
+                          requires_grad=False).view(-1, 1, test.shape[1]).to(device)
 
         outputs = model(inputs)
         pred = np.argmax(outputs.data.cpu().numpy(), axis=1)
@@ -42,12 +42,9 @@ def Test(model, test, test_label, test_size):
     return f1, precision, recall, acc
 
 
-# for label_train_size in [270, 540, 1350, 2700, 5400, 13500, 27000, 270000]:
 
-
-for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
+for label_train_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
     print("the label size is", label_train_size)
-    step_counter = 0
 
     test_size = 10000
     train_size = 90000
@@ -73,7 +70,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
     dataset_unlabeled = torch.utils.data.TensorDataset(torch.from_numpy(unlabeled_train))
     # loader_labeled = DataLoad(torch.from_numpy(labeled_train), torch.from_numpy(train_label), batch_size)# 1
     loader_labeled = DataLoad(labeled_train, train_label, batch_size)
-    model = newCNN.Model(data.shape[1])
+    model = newCNN.Model(data.shape[1]).to(device)
     cost = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.00001, weight_decay=0.01)  # 0.00001,0.01
 
@@ -89,10 +86,10 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
         for i in range(train_batch):
             inputs = Variable(
                 torch.from_numpy(labeled_train[i * batch_size:min((i + 1) * batch_size, label_train_size)]),
-                requires_grad=False).view(-1, 1, data.shape[1])
+                requires_grad=False).view(-1, 1, data.shape[1]).to(device)
             targets = Variable(
                 torch.from_numpy(train_label[i * batch_size:min((i + 1) * batch_size, label_train_size)]),
-                requires_grad=False)
+                requires_grad=False).to(device)
 
             output = model(inputs)
             # print(output)
@@ -117,7 +114,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
         output_transform=torch.sigmoid,
         K=2,
         T=1.0,
-        alpha=0.75
+        alpha=0.5
     )
 
     criterion = get_mixmatch_loss(
@@ -169,10 +166,10 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
             index = random.randint(0, train_batch - 1)
             inputs = Variable(
                 torch.from_numpy(labeled_train[index * batch_size:min((index + 1) * batch_size, label_train_size)]),
-                requires_grad=False).view(-1, 1, data.shape[1])
+                requires_grad=False).view(-1, 1, data.shape[1]).to(device)
             targets = Variable(
                 torch.from_numpy(train_label[index * batch_size:min((index + 1) * batch_size, label_train_size)]),
-                requires_grad=False)
+                requires_grad=False).to(device)
             output = model(inputs)
             optimizer.zero_grad()
             loss1 = cost(output, targets)
