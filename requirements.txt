@@ -1,0 +1,7 @@
+numpy~=1.19.2
+scikit-learn~=0.23.2
+matplotlib~=3.3.2
+cython~=0.29.21
+tsaug~=0.2.1
+pandas~=1.2.0
+scapy~=2.4.3

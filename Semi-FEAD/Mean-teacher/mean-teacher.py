@@ -1,4 +1,3 @@
-import torch
 from torch import autograd
 import numpy as np
 from torch.autograd import Variable
@@ -7,6 +6,9 @@ import torch
 import torch.nn.functional as F
 
 import sys
+
+sys.path.append("..")
+from SemiDataLoader import getData
 
 sys.path.append("../..")
 import newCNN
@@ -38,10 +40,10 @@ def symmetric_mse_loss(input1, input2):
     return torch.sum((input1 - input2) ** 2) / num_classes
 
 
-def noise(input):
-    Size = len(input)
-    a = torch.from_numpy(np.random.normal(0.0, scale=0.5, size=(Size, 155)).astype(np.float32)).to(device)
-    return (input + a)
+def noise(inputs, shape1):
+    shape0 = len(inputs)
+    a = torch.from_numpy(np.random.normal(0.0, scale=0.01, size=(shape0, shape1)).astype(np.float32)).to(device)
+    return inputs + a
 
 
 def train(stu, teacher, train_data, train_labels, optimizer, epoch, step_counter):
@@ -58,13 +60,14 @@ def train(stu, teacher, train_data, train_labels, optimizer, epoch, step_counter
     loss = 0
     class_loss = 0
     consistency_loss = 0
+    shape_1 = train_data.shape[1]
     for i in range(train_batch):
         input1 = autograd.Variable(
             (train_data[i * batch_size:min((i + 1) * batch_size, train_size), :]),
-            requires_grad=False).view(-1, 1, train_data.shape[1])
+            requires_grad=False).view(-1, 1, shape_1)
         input2 = autograd.Variable(
-            noise(train_data[i * batch_size:min((i + 1) * batch_size, train_size), :]),
-            requires_grad=False).view(-1, 1, train_data.shape[1])
+            noise(train_data[i * batch_size:min((i + 1) * batch_size, train_size), :], shape_1),
+            requires_grad=False).view(-1, 1, shape_1)
         targets = autograd.Variable(
             train_labels[i * batch_size:min((i + 1) * batch_size, train_size)],
             requires_grad=False)
@@ -130,56 +133,40 @@ def Test(model, test, test_label, test_size):
     return f1, precision, recall, acc
 
 
-data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
-labels_path = "../../MAWILab-GAfeature/mawilab_label_10w.npy"
-data = np.load(data_path)
-labels = np.load(labels_path)
-
 ff = open("./res_mean-teacher.md", "w")
 
-for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
+for train_labeled_size in [900]: #[180, 450, 900, 1800, 4500, 9000, 18000]:
     F1s = []
     Precisions = []
     Recalls = []
     ACCs = []
-    number = 10  # 取10次均值
+    number = 1  # 取number次均值
     test_size = 10000
     train_size = 90000
+
+    train_unlabeled_size = train_size - train_labeled_size
+
+    train_labeled_data, train_label, train_unlabeled_data, test_data, test_label = getData(train_labeled_size,
+                                                                                           train_unlabeled_size,
+                                                                                           test_size)
+    unlabeled_label = np.array([-1] * train_unlabeled_size)
+    indices = np.random.permutation(train_size)
+
+    all_train_label = torch.from_numpy(
+        (np.concatenate((train_label, unlabeled_label)))[indices].astype(np.longlong)).to(device)
+    all_train_data = torch.from_numpy((np.concatenate((train_labeled_data, train_unlabeled_data)))[indices]).to(device)
+
+    test_data = torch.from_numpy(test_data).to(device)
+    test_label = torch.from_numpy(test_label)
+
+    shape_1 = train_labeled_data.shape[1]
+
     for __ in range(number):
         step_counter = 0
-        stu = newCNN.Model(data.shape[1]).to(device)
-        teacher = newCNN.Model(data.shape[1]).to(device)
+        stu = newCNN.Model(shape_1).to(device)
+        teacher = newCNN.Model(shape_1).to(device)
         for param in teacher.parameters():
             param.detach_()
-
-        # test_size = 29999
-        # train_size = 270000
-        unlabel_train_size = train_size - label_train_size
-
-        all_train_data = data[0:train_size, :]
-        all_train_label = labels[0:train_size]
-
-        # ran_dice = np.random.permutation(train_size)
-        # all_train_data = all_train_data[ran_dice, :]
-        # all_train_label = all_train_label[ran_dice]
-
-        labeled_train = all_train_data[0:label_train_size, :]
-        train_label = all_train_label[0:label_train_size]
-
-        # unlabeled_train = data[label_train_size:label_train_size+unlabel_train_size,:]
-        unlabeled_train = all_train_data[label_train_size: train_size, :]
-        unlabeled_label = np.array([-1] * unlabel_train_size)
-
-        test = torch.from_numpy(data[train_size:train_size + test_size, :]).to(device)
-        test_label = torch.from_numpy(labels[train_size:train_size + test_size])
-
-        # train_data = data[0:label_train_size+unlabel_train_size,:]
-        train_data = all_train_data
-        all_label_train = np.concatenate((train_label, unlabeled_label))
-        indices = np.random.permutation(label_train_size + unlabel_train_size)
-
-        new_data = torch.from_numpy(train_data[indices, :]).to(device)
-        new_label = torch.from_numpy(all_label_train[indices].astype(np.longlong)).to(device)
 
         optimizer = torch.optim.Adam(stu.parameters(), lr=0.001)  # 0.00001,0.01
         f1 = 0
@@ -188,11 +175,11 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
         acc = 0
         for epoch in range(4):
             print("epoch: ", epoch)
-            train(stu, teacher, new_data, new_label, optimizer, epoch, step_counter)
+            train(stu, teacher, all_train_data, all_train_label, optimizer, epoch, step_counter)
 
             print("test....")
-            f1, precision, recall, acc = Test(stu, test, test_label, test_size)
-            print("|", label_train_size, "|", f1, "|", precision, "|", recall, "|", acc, "|", 1 - acc, "|")
+            f1, precision, recall, acc = Test(stu, test_data, test_label, test_size)
+            print("|", train_labeled_size, "|", f1, "|", precision, "|", recall, "|", acc, "|", 1 - acc, "|")
 
         F1s.append(f1)
         Precisions.append(precision)
@@ -203,7 +190,7 @@ for label_train_size in [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
     precision = sum(Precisions) / float(number)
     recall = sum(Recalls) / float(number)
     acc = sum(ACCs) / float(number)
-    print("|", label_train_size, "|", label_train_size / train_size * 100, "|", f1, "|", precision, "|", recall, "|",
-          acc, "|", 1.0 - acc, "|", file=ff)
+    print("|", train_labeled_size, "|", train_labeled_size / train_size * 100, "|", f1, "|", precision, "|", recall,
+          "|", acc, "|", 1.0 - acc, "|", file=ff)
 
 ff.close()

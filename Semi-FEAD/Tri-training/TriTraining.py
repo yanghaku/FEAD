@@ -1,12 +1,11 @@
 import numpy as np
 import sklearn
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score
 import sys
 
 sys.path.append('../..')
-import FEAD
 
-RANDOM = 2020
+import FEAD
 
 
 class TriTraining:
@@ -81,57 +80,3 @@ class TriTraining:
         wrong_index = np.logical_and(j_pred != y, k_pred == j_pred)
         # wrong_index =np.logical_and(j_pred != y_test, k_pred!=y_test)
         return sum(wrong_index) / sum(j_pred == k_pred)
-
-
-data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
-labels_path = "../../MAWILab-GAfeature/mawilab_label_10w.npy"
-# data_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\data_30w_des.tsv.npy"
-# labels_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\labels_30w_des.csv.npy"
-data = np.load(data_path).astype(np.float32)
-labels = np.load(labels_path)
-
-ff = open("./res_tri-training.md", "w")
-
-for label_train_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:
-    test_size = 10000
-    train_size = 90000
-    # test_size = 29999
-    # train_size = 270000
-    # label_train_size = 5000
-    unlabel_train_size = train_size - label_train_size
-
-    train_data = data[0:train_size]
-    train_label = labels[0:train_size]
-
-    # labeled_train = data[0:label_train_size,:]
-    # train_label = labels[0:label_train_size]
-    labeled_train = train_data[0:label_train_size, :]
-    train_label = train_label[0:label_train_size]
-
-    # unlabeled_train = data[label_train_size:label_train_size+unlabel_train_size,:]
-    unlabeled_train = train_data[label_train_size:train_size, :]
-
-    test = data[train_size:train_size + test_size, :]
-    test_label = labels[train_size:train_size + test_size]
-
-    TT = TriTraining(data.shape[1])
-    TT.fit(labeled_train, train_label, unlabeled_train)
-    res = TT.predict(test)
-
-    accuracy = accuracy_score(test_label, res)
-    precision = precision_score(test_label, res)
-    recall = recall_score(test_label, res)
-    f1 = f1_score(test_label, res)
-    test_error = 1.0 - accuracy
-    # PRECISION = []
-    # RECALL = []
-    # F1 = []
-    # PRECISION.append(precision)
-    # RECALL.append(recall)
-    # F1.append(f1)
-    print("|", label_train_size, "|", label_train_size / train_size * 100, "|", f1, "|", precision, "|", recall, "|",
-          accuracy, "|", test_error, "|")
-    print("|", label_train_size, "|", label_train_size / train_size * 100, "|", f1, "|", precision, "|", recall, "|",
-          accuracy, "|", test_error, "|", file=ff)
-
-ff.close()

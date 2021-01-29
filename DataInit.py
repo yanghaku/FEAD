@@ -1,4 +1,3 @@
-import torch
 from FeatureExtractor import FE
 import numpy as np
 
