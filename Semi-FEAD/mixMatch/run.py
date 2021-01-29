@@ -45,7 +45,7 @@ def Test(model, test_data, test_label, test_size):
     return f1, precision, recall, acc
 
 
-for train_labeled_size in [900]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
+for train_labeled_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
     print("the label size is", train_labeled_size)
     test_size = 10000
     train_size = 90000

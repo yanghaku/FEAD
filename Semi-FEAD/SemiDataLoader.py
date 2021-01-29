@@ -21,8 +21,8 @@ def getData(train_labeled_size, train_unlabeled_size, test_size):
         choose_indice[x] = 1
         x = (x + p) % train_size
 
-    labeled_indice = np.empty(train_labeled_size).astype(np.int)
-    unlabeled_indice = np.empty(train_unlabeled_size).astype(np.int)
+    labeled_indice = np.zeros(train_labeled_size).astype(np.int)
+    unlabeled_indice = np.zeros(train_unlabeled_size).astype(np.int)
     x = 0
     y = 0
     for i in range(train_size):
@@ -36,7 +36,7 @@ def getData(train_labeled_size, train_unlabeled_size, test_size):
     # train_labeled_data = train_data[0:train_labeled_size, :]
     # train_label = train_label[0:train_labeled_size]
     # train_unlabeled_data = train_data[train_labeled_size:train_size, :]
-    print(x,y)
+
     train_labeled_data = train_data[labeled_indice, :]
     train_label = train_label[labeled_indice]
     train_unlabeled_data = train_data[unlabeled_indice, :]
@@ -44,7 +44,6 @@ def getData(train_labeled_size, train_unlabeled_size, test_size):
     xx = [0, 0]
     for i in train_label:
         xx[i] += 1
-    print(xx)
     test_data = data[train_size:train_size + test_size, :]
     test_label = labels[train_size:train_size + test_size]
 

@@ -42,7 +42,7 @@ def symmetric_mse_loss(input1, input2):
 
 def noise(inputs, shape1):
     shape0 = len(inputs)
-    a = torch.from_numpy(np.random.normal(0.0, scale=0.01, size=(shape0, shape1)).astype(np.float32)).to(device)
+    a = torch.from_numpy(np.random.normal(0.0, scale=0.001, size=(shape0, shape1)).astype(np.float32)).to(device)
     return inputs + a
 
 
@@ -135,33 +135,34 @@ def Test(model, test, test_label, test_size):
 
 ff = open("./res_mean-teacher.md", "w")
 
-for train_labeled_size in [900]: #[180, 450, 900, 1800, 4500, 9000, 18000]:
+for train_labeled_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:
     F1s = []
     Precisions = []
     Recalls = []
     ACCs = []
-    number = 1  # 取number次均值
+    number = 10  # 取number次均值
     test_size = 10000
     train_size = 90000
 
     train_unlabeled_size = train_size - train_labeled_size
 
-    train_labeled_data, train_label, train_unlabeled_data, test_data, test_label = getData(train_labeled_size,
-                                                                                           train_unlabeled_size,
-                                                                                           test_size)
-    unlabeled_label = np.array([-1] * train_unlabeled_size)
-    indices = np.random.permutation(train_size)
-
-    all_train_label = torch.from_numpy(
-        (np.concatenate((train_label, unlabeled_label)))[indices].astype(np.longlong)).to(device)
-    all_train_data = torch.from_numpy((np.concatenate((train_labeled_data, train_unlabeled_data)))[indices]).to(device)
-
-    test_data = torch.from_numpy(test_data).to(device)
-    test_label = torch.from_numpy(test_label)
-
-    shape_1 = train_labeled_data.shape[1]
-
     for __ in range(number):
+        train_labeled_data, train_label, train_unlabeled_data, test_data, test_label = getData(train_labeled_size,
+                                                                                               train_unlabeled_size,
+                                                                                               test_size)
+        unlabeled_label = np.array([-1] * train_unlabeled_size)
+        indices = np.random.permutation(train_size)
+
+        all_train_label = torch.from_numpy(
+            (np.concatenate((train_label, unlabeled_label)))[indices].astype(np.longlong)).to(device)
+        all_train_data = torch.from_numpy((np.concatenate((train_labeled_data, train_unlabeled_data)))[indices]).to(
+            device)
+
+        test_data = torch.from_numpy(test_data).to(device)
+        test_label = torch.from_numpy(test_label)
+
+        shape_1 = train_labeled_data.shape[1]
+
         step_counter = 0
         stu = newCNN.Model(shape_1).to(device)
         teacher = newCNN.Model(shape_1).to(device)
