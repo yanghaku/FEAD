@@ -42,7 +42,7 @@ def symmetric_mse_loss(input1, input2):
 
 def noise(inputs, shape1):
     shape0 = len(inputs)
-    a = torch.from_numpy(np.random.normal(0.0, scale=0.001, size=(shape0, shape1)).astype(np.float32)).to(device)
+    a = torch.from_numpy(np.random.normal(0.0, scale=0.01, size=(shape0, shape1)).astype(np.float32)).to(device)
     return inputs + a
 
 
@@ -174,7 +174,7 @@ for train_labeled_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:
         precision = 0
         recall = 0
         acc = 0
-        for epoch in range(4):
+        for epoch in range(10):
             print("epoch: ", epoch)
             train(stu, teacher, all_train_data, all_train_label, optimizer, epoch, step_counter)
 
