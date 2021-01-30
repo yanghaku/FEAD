@@ -26,7 +26,7 @@ def mixmatch_batch(
     num = 0
     for u in features_unlabeled:
         # print(len(u.numpy().tolist()))
-        x = my_augmenter.augment(u.numpy()).reshape((1, 155))
+        x = my_augmenter.augment(u.numpy()).reshape((1, u.shape[0]))
         if new is None:
             new = x
         else:

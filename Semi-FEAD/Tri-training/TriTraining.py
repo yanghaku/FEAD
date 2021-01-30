@@ -9,11 +9,11 @@ import FEAD
 
 
 class TriTraining:
-    def __init__(self, sz):
+    def __init__(self, sz, lr=0.001):
         self.classifiers = [0, 0, 0]
-        self.classifiers[0] = FEAD.FEAD(sz)
-        self.classifiers[1] = FEAD.FEAD(sz)
-        self.classifiers[2] = FEAD.FEAD(sz)
+        self.classifiers[0] = FEAD.FEAD(sz, lr)
+        self.classifiers[1] = FEAD.FEAD(sz, lr)
+        self.classifiers[2] = FEAD.FEAD(sz, lr)
 
     def fit(self, L_X, L_y, U_X):
         for i in range(3):

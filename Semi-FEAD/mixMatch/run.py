@@ -19,10 +19,6 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("device is: ", device)
 
 batch_size = 8
-data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
-labels_path = "../../MAWILab-GAfeature/mawilab_label_10w.npy"
-data = np.load(data_path)
-labels = np.load(labels_path)
 
 
 def Test(model, test_data, test_label, test_size):
@@ -45,25 +41,40 @@ def Test(model, test_data, test_label, test_size):
     return f1, precision, recall, acc
 
 
-ff = open("res_mixmatch.md", "w")
-for train_labeled_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  # [90000]:
+IDS = True
+if IDS:
+    ff = open("./res_mixmatch-ids.md", "w")
+    data_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\data_30w_des.tsv.npy"
+    labels_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\labels_30w_des.csv.npy"
+    test_size = 29999
+    train_size = 270000
+    lst = [540, 1350, 2700, 5400, 13500, 27000]
+    lr = 0.000001
+else:
+    ff = open("res_mixmatch.md", "w")
+    data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
+    labels_path = "../../MAWILab-GAfeature/mawilab_label_10w.npy"
+    test_size = 10000
+    train_size = 90000
+    lst = [180, 450, 900, 1800, 4500, 9000, 18000]
+
+for train_labeled_size in lst:
     print("the label size is", train_labeled_size)
     number = 10  # 取10次平均
     F1s = []
     ACCs = []
-    test_size = 10000
-    train_size = 90000
     for _ in range(number):
 
         train_unlabeled_size = train_size - train_labeled_size
 
-        train_labeled_data, train_label, train_unlabeled_data, test_data, test_label = getData(train_labeled_size,
+        train_labeled_data, train_label, train_unlabeled_data, test_data, test_label = getData(data_path, labels_path,
+                                                                                               train_labeled_size,
                                                                                                train_unlabeled_size,
                                                                                                test_size)
         test_data = torch.from_numpy(test_data).to(device)
         dataset_unlabeled = torch.utils.data.TensorDataset(torch.from_numpy(train_unlabeled_data))
         loader_labeled = DataLoad(train_labeled_data, train_label, batch_size)
-        model = newCNN.Model(data.shape[1]).to(device)
+        model = newCNN.Model(test_data.shape[1]).to(device)
         cost = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
@@ -82,7 +93,7 @@ for train_labeled_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  #
             for i in range(train_batch):
                 inputs = Variable(
                     torch.from_numpy(train_labeled_data[i * batch_size:min((i + 1) * batch_size, train_labeled_size)]),
-                    requires_grad=False).view(-1, 1, data.shape[1]).to(device)
+                    requires_grad=False).view(-1, 1, test_data.shape[1]).to(device)
                 targets = Variable(
                     torch.from_numpy(train_label[i * batch_size:min((i + 1) * batch_size, train_labeled_size)]),
                     requires_grad=False).to(device)
@@ -105,7 +116,7 @@ for train_labeled_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  #
             dataset_unlabeled,
             model,
             output_transform=torch.sigmoid,
-            K=6,
+            K=2,
             T=1.0,
             alpha=0.75
         )
@@ -113,8 +124,8 @@ for train_labeled_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  #
         criterion = get_mixmatch_loss(
             criterion_labeled=torch.nn.BCEWithLogitsLoss(),
             output_transform=torch.sigmoid,
-            K=6,
-            weight_unlabeled=10.,  # 100.
+            K=2,
+            weight_unlabeled=2.,  # 100.
             criterion_unlabeled=torch.nn.MSELoss()
         )
 
@@ -132,7 +143,7 @@ for train_labeled_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:  #
             running_correct = 0
             loss_sum = 0
             for batch in loader_mixmatch:
-                inputs = Variable(batch['features'].to(device), requires_grad=False).view(-1, 1, data.shape[1])
+                inputs = Variable(batch['features'].to(device), requires_grad=False).view(-1, 1, test_data.shape[1])
                 label = Variable(batch['targets'].to(device), requires_grad=False)
                 num = num + inputs.shape[0]
                 logits = model(inputs)

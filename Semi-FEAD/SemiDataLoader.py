@@ -1,10 +1,7 @@
 import numpy as np
 
-data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
-labels_path = "../../MAWILab-GAfeature/mawilab_label_10w.npy"
 
-
-def getData(train_labeled_size, train_unlabeled_size, test_size):
+def getData(data_path, labels_path, train_labeled_size, train_unlabeled_size, test_size):
     # 加载数据
     data = np.load(data_path).astype(np.float32)
     labels = np.load(labels_path)
@@ -41,9 +38,6 @@ def getData(train_labeled_size, train_unlabeled_size, test_size):
     train_label = train_label[labeled_indice]
     train_unlabeled_data = train_data[unlabeled_indice, :]
 
-    xx = [0, 0]
-    for i in train_label:
-        xx[i] += 1
     test_data = data[train_size:train_size + test_size, :]
     test_label = labels[train_size:train_size + test_size]
 

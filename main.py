@@ -2,11 +2,19 @@ import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import FEAD
 
-data_path = "./MAWILab-GAfeature/mawilab_ga.npy"
-labels_path = "./MAWILab-GAfeature/mawilab_label_10w.npy"
+IDS = True
 
-train_size = 90000
-test_size = 10000
+if IDS:
+    data_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\data_30w_des.tsv.npy"
+    labels_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\labels_30w_des.csv.npy"
+    test_size = 29999
+    train_size = 270000
+
+else:
+    data_path = "./MAWILab-GAfeature/mawilab_ga.npy"
+    labels_path = "./MAWILab-GAfeature/mawilab_label_10w.npy"
+    train_size = 90000
+    test_size = 10000
 
 if __name__ == "__main__":
     data = np.load(data_path).astype(np.float32)

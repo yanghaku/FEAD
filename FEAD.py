@@ -10,11 +10,11 @@ print("device is: ", device)
 
 
 class FEAD:
-    def __init__(self, sz=155):
+    def __init__(self, sz=155, lr=0.001):
         self.sz = sz
         self.model = newCNN.Model(sz).to(device)
         self.cost = torch.nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)  # 0.00001,0.01
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
     def fit(self, X, Y):
         data = X
@@ -31,7 +31,6 @@ class FEAD:
         for epoch in range(n_epochs):
             loss_sum = 0
             running_correct = 0
-            start = time.time()
             print("training Epoch{}/{}".format(epoch, n_epochs))
             train_begin = time.time()
             for i in range(train_batch):
@@ -50,12 +49,12 @@ class FEAD:
                 self.optimizer.step()
 
                 loss_sum += loss.data.cpu().numpy()
-                running_correct += torch.sum(pred == targets)
+                running_correct += sum(pred == targets)
 
             stop = time.time()
             print(epoch, "epoch time is", stop - train_begin)
-            print("Loss is : {:.4f},Train acc is :{:.4f}%".format(loss_sum / (train_size),
-                                                                  100 * running_correct / (train_size)))
+            print("Loss is : {:.4f},Train acc is :{:.4f}%".format(loss_sum / train_size,
+                                                                  100 * running_correct / train_size))
 
     def predict(self, X):
         self.model.eval()
