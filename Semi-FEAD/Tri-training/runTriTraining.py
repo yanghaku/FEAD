@@ -29,25 +29,35 @@ else:
 for train_labeled_size in lst:
     train_unlabeled_size = train_size - train_labeled_size
 
-    train_labeled_data, train_label, train_unlabeled_data, test_data, test_label = getData(data_path, labels_path,
-                                                                                           train_labeled_size,
-                                                                                           train_unlabeled_size,
-                                                                                           test_size)
+    number = 10  # 取10次平均
+    F1s = []
+    ACCs = []
 
-    TT = TriTraining(train_labeled_data.shape[1], lr)
+    for r in range(number):
+        train_labeled_data, train_label, train_unlabeled_data, test_data, test_label = getData(data_path, labels_path,
+                                                                                               train_labeled_size,
+                                                                                               train_unlabeled_size,
+                                                                                               test_size)
 
-    TT.fit(train_labeled_data, train_label, train_unlabeled_data)
-    res = TT.predict(test_data)
+        TT = TriTraining(train_labeled_data.shape[1], lr)
 
-    accuracy = accuracy_score(test_label, res)
-    precision = precision_score(test_label, res)
-    recall = recall_score(test_label, res)
-    f1 = f1_score(test_label, res)
-    test_error = 1.0 - accuracy
+        TT.fit(train_labeled_data, train_label, train_unlabeled_data)
+        res = TT.predict(test_data)
 
-    print("|", train_labeled_size, "|", train_labeled_size / train_size * 100, "|", f1, "|", precision, "|", recall,
-          "|", accuracy, "|", test_error, "|")
-    print("|", train_labeled_size, "|", train_labeled_size / train_size * 100, "|", f1, "|", precision, "|", recall,
-          "|", accuracy, "|", test_error, "|", file=ff)
+        accuracy = accuracy_score(test_label, res)
+        precision = precision_score(test_label, res)
+        recall = recall_score(test_label, res)
+        f1 = f1_score(test_label, res)
+        test_error = 1.0 - accuracy
+        F1s.append(f1)
+        ACCs.append(accuracy)
+
+        print("|", train_labeled_size, "|", train_labeled_size / train_size * 100, "|", f1, "|", precision, "|", recall,
+              "|", accuracy, "|", test_error, "|")
+
+    f1 = sum(F1s) / float(number)
+    acc = sum(ACCs) / float(number)
+    print("|", train_labeled_size, "|", train_labeled_size / train_size * 100, "|", f1, "|", acc, "|", 1.0 - acc, "|",
+          file=ff)
 
 ff.close()

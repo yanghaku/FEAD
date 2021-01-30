@@ -9,19 +9,17 @@ if IDS:
     labels_path = "./MAWILab-GAfeature/ids_label_30w.npy"
     test_size = 29999
     train_size = 270000
-    lr = 0.00001
 
 else:
     data_path = "./MAWILab-GAfeature/mawilab_ga.npy"
     labels_path = "./MAWILab-GAfeature/mawilab_label_10w.npy"
     train_size = 90000
     test_size = 10000
-    lr = 0.001
 
 if __name__ == "__main__":
     data = np.load(data_path).astype(np.float32)
     labels = np.load(labels_path)
-    model = FEAD.FEAD(data.shape[1],lr)
+    model = FEAD.FEAD(data.shape[1])
 
     data_train = data[0:train_size, :]
     data_test = data[train_size:train_size + test_size, :]

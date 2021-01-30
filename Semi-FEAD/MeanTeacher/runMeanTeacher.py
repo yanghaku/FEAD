@@ -20,7 +20,6 @@ if IDS:
     test_size = 29999
     train_size = 270000
     lst = [540, 1350, 2700, 5400, 13500, 27000]
-    lr = 0.0001
 
 else:
     ff = open("./res_mean-teacher.md", "w")
@@ -29,7 +28,6 @@ else:
     test_size = 10000
     train_size = 90000
     lst = [180, 450, 900, 1800, 4500, 9000, 18000]
-    lr = 0.001
 
 for train_labeled_size in lst:
     F1s = []
@@ -64,7 +62,7 @@ for train_labeled_size in lst:
         for param in teacher.parameters():
             param.detach_()
 
-        optimizer = torch.optim.Adam(stu.parameters(), lr=lr)
+        optimizer = torch.optim.Adam(stu.parameters())
         f1 = 0
         precision = 0
         recall = 0

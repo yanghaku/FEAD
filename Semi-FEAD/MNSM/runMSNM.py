@@ -17,7 +17,6 @@ if IDS:
     train_size = 270000
     lst = [540, 1350, 2700, 5400, 13500, 27000]
     threshold_precent = 1
-    n_component = 15
 
 else:
     ff = open("msnm_mawilab.md", "w")
@@ -26,7 +25,6 @@ else:
     test_size = 10000
     train_size = 90000
     lst = [180, 450, 900, 1800, 4500, 9000, 18000]
-    n_component = 2
     threshold_precent = 0.8
 
 for train_labeled_size in lst:
@@ -52,6 +50,7 @@ for train_labeled_size in lst:
         K = 10
         rc = 0.001
         epoch = 5
+        n_component = 2
         model.train(train_labeled_data, train_label, train_unlabeled_data, n_component, K, rc, epoch)
 
         print("test....")

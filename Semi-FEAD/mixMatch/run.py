@@ -41,7 +41,7 @@ def Test(model, test_data, test_label, test_size):
     return f1, precision, recall, acc
 
 
-IDS = False
+IDS = True
 if IDS:
     ff = open("./res_mixmatch-ids.md", "w")
     data_path = "../../MAWILab-GAfeature/ids_30w.npy"
@@ -49,7 +49,7 @@ if IDS:
     test_size = 29999
     train_size = 270000
     lst = [540, 1350, 2700, 5400, 13500, 27000]
-    lr = 0.000001
+
 else:
     ff = open("res_mixmatch.md", "w")
     data_path = "../../MAWILab-GAfeature/mawilab_ga.npy"
