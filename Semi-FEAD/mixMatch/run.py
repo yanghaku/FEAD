@@ -41,7 +41,7 @@ def Test(model, test_data, test_label, test_size):
     return f1, precision, recall, acc
 
 
-IDS = True
+IDS = False
 if IDS:
     ff = open("./res_mixmatch-ids.md", "w")
     data_path = "../../MAWILab-GAfeature/ids_30w.npy"

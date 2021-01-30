@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import FEAD
 
-IDS = True
+IDS = False
 
 if IDS:
     data_path = "./MAWILab-GAfeature/ids_30w.npy"

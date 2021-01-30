@@ -6,7 +6,7 @@ sys.path.append('..')
 
 from SemiDataLoader import getData
 
-IDS = True
+IDS = False
 
 if IDS:
     ff = open("./res_triTraining-ids.md", "w")

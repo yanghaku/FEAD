@@ -11,7 +11,7 @@ from SemiDataLoader import getData
 sys.path.append("../..")
 import newCNN
 
-IDS = True
+IDS = False
 
 if IDS:
     ff = open("./res_mean_ids.md", "w")
