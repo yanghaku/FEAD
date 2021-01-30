@@ -3,19 +3,9 @@ import numpy as np
 from torch.autograd import Variable
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import torch
-import torch.nn.functional as F
-
-import sys
-
-sys.path.append("..")
-from SemiDataLoader import getData
-
-sys.path.append("../..")
-import newCNN
+from torch.nn.functional import mse_loss
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("device is: ", device)
-
 batch_size = 8
 
 
@@ -28,10 +18,10 @@ def update_teacher_variables(stu, teacher, alpha, global_step):
 
 def softmax_mse_loss(input_logits, target_logits):
     assert input_logits.size() == target_logits.size()
-    input_softmax = F.softmax(input_logits, dim=1)
-    target_softmax = F.softmax(target_logits, dim=1)
+    input_softmax = torch.softmax(input_logits, dim=1)
+    target_softmax = torch.softmax(target_logits, dim=1)
     num_classes = input_logits.size()[1]
-    return F.mse_loss(input_softmax, target_softmax, size_average=False) / num_classes
+    return mse_loss(input_softmax, target_softmax, size_average=False) / num_classes
 
 
 def symmetric_mse_loss(input1, input2):
@@ -49,8 +39,8 @@ def noise(inputs, shape1):
 def train(stu, teacher, train_data, train_labels, optimizer, epoch, step_counter):
     classify_loss_function = torch.nn.CrossEntropyLoss(size_average=True, ignore_index=-1)
     consistency_criterion = softmax_mse_loss
-    residual_logit_criterion = symmetric_mse_loss
-    alpha = 0.8
+    # residual_logit_criterion = symmetric_mse_loss
+    alpha = 0.9
     consistency_weight = 1
     stu.train()
     teacher.train()
@@ -131,67 +121,3 @@ def Test(model, test, test_label, test_size):
     acc = accuracy_score(test_label, prediction)
 
     return f1, precision, recall, acc
-
-
-ff = open("./res_mean-teacher.md", "w")
-
-for train_labeled_size in [180]:  # [180, 450, 900, 1800, 4500, 9000, 18000]:
-    F1s = []
-    Precisions = []
-    Recalls = []
-    ACCs = []
-    number = 10  # 取number次均值
-    test_size = 10000
-    train_size = 90000
-
-    train_unlabeled_size = train_size - train_labeled_size
-
-    for __ in range(number):
-        train_labeled_data, train_label, train_unlabeled_data, test_data, test_label = getData(train_labeled_size,
-                                                                                               train_unlabeled_size,
-                                                                                               test_size)
-        unlabeled_label = np.array([-1] * train_unlabeled_size)
-        indices = np.random.permutation(train_size)
-
-        all_train_label = torch.from_numpy(
-            (np.concatenate((train_label, unlabeled_label)))[indices].astype(np.longlong)).to(device)
-        all_train_data = torch.from_numpy((np.concatenate((train_labeled_data, train_unlabeled_data)))[indices]).to(
-            device)
-
-        test_data = torch.from_numpy(test_data).to(device)
-        test_label = torch.from_numpy(test_label)
-
-        shape_1 = train_labeled_data.shape[1]
-
-        step_counter = 0
-        stu = newCNN.Model(shape_1).to(device)
-        teacher = newCNN.Model(shape_1).to(device)
-        for param in teacher.parameters():
-            param.detach_()
-
-        optimizer = torch.optim.Adam(stu.parameters(), lr=0.001)  # 0.00001,0.01
-        f1 = 0
-        precision = 0
-        recall = 0
-        acc = 0
-        for epoch in range(10):
-            print("epoch: ", epoch)
-            train(stu, teacher, all_train_data, all_train_label, optimizer, epoch, step_counter)
-
-            print("test....")
-            f1, precision, recall, acc = Test(stu, test_data, test_label, test_size)
-            print("|", train_labeled_size, "|", f1, "|", precision, "|", recall, "|", acc, "|", 1 - acc, "|")
-
-        F1s.append(f1)
-        Precisions.append(precision)
-        Recalls.append(recall)
-        ACCs.append(acc)
-
-    f1 = sum(F1s) / float(number)
-    precision = sum(Precisions) / float(number)
-    recall = sum(Recalls) / float(number)
-    acc = sum(ACCs) / float(number)
-    print("|", train_labeled_size, "|", train_labeled_size / train_size * 100, "|", f1, "|", precision, "|", recall,
-          "|", acc, "|", 1.0 - acc, "|", file=ff)
-
-ff.close()

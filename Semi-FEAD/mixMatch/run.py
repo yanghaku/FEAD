@@ -41,11 +41,11 @@ def Test(model, test_data, test_label, test_size):
     return f1, precision, recall, acc
 
 
-IDS = True
+IDS = False
 if IDS:
     ff = open("./res_mixmatch-ids.md", "w")
-    data_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\data_30w_des.tsv.npy"
-    labels_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\labels_30w_des.csv.npy"
+    data_path = "../../MAWILab-GAfeature/ids_30w.npy"
+    labels_path = "../../MAWILab-GAfeature/ids_label_30w.npy"
     test_size = 29999
     train_size = 270000
     lst = [540, 1350, 2700, 5400, 13500, 27000]

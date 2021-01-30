@@ -5,29 +5,28 @@ import FEAD
 IDS = True
 
 if IDS:
-    data_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\data_30w_des.tsv.npy"
-    labels_path = "D:\\Dataset\\IDS2017-Wednesday\\IDS2017-v4.1.0\\labels_30w_des.csv.npy"
+    data_path = "./MAWILab-GAfeature/ids_30w.npy"
+    labels_path = "./MAWILab-GAfeature/ids_label_30w.npy"
     test_size = 29999
     train_size = 270000
+    lr = 0.00001
 
 else:
     data_path = "./MAWILab-GAfeature/mawilab_ga.npy"
     labels_path = "./MAWILab-GAfeature/mawilab_label_10w.npy"
     train_size = 90000
     test_size = 10000
+    lr = 0.001
 
 if __name__ == "__main__":
     data = np.load(data_path).astype(np.float32)
     labels = np.load(labels_path)
-    model = FEAD.FEAD(data.shape[1])
-    LEN = len(labels)
-    all_train = data[0:train_size, :]
-    all_train_label = labels[0:train_size]
+    model = FEAD.FEAD(data.shape[1],lr)
 
-    data_train = all_train[0:train_size, :]
-    data_test = data[LEN - test_size:LEN, :]
-    label_train = all_train_label[0:train_size]
-    label_test = labels[LEN - test_size:LEN]
+    data_train = data[0:train_size, :]
+    data_test = data[train_size:train_size + test_size, :]
+    label_train = labels[0:train_size]
+    label_test = labels[train_size:train_size + test_size]
 
     # for e in range(16):
     #     model.fit(data_train, label_train)
@@ -59,4 +58,6 @@ if __name__ == "__main__":
         fpr = FP / (TN + FP)
     else:
         fpr = 0
-    print("Precision = ", precision, "Recall = ", recall, "F1-score = ", f1, "FPR=", fpr)
+
+    print("TN = ", TN, "TP= ", TP, "FN= ", FN, "FP=", FP)
+    print("F1-score = ", f1, "Precision = ", precision, "Recall = ", recall, "FPR=", fpr)
