@@ -32,6 +32,6 @@ class Model(torch.nn.Module):
         x = x.view(-1, self.sz)
         # x = x.view(-1,22*8)
         x = self.dense(x)
-        return torch.softmax(x, 1)
+        return x
         # return torch.nn.functional.log_softmax(x)
         # return torch.nn.functional.softmax(x)

@@ -54,7 +54,7 @@ class FEAD:
             stop = time.time()
             print(epoch, "epoch time is", stop - train_begin)
             print("Loss is : {:.4f},Train acc is :{:.4f}%".format(loss_sum / train_size,
-                                                                  100 * running_correct / train_size))
+                                                                  100.0 * running_correct / train_size))
 
     def predict(self, X):
         self.model.eval()
