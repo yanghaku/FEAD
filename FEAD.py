@@ -10,16 +10,16 @@ print("device is: ", device)
 
 
 class FEAD:
-    def __init__(self, sz=155, lr=0.001):
+    def __init__(self, sz=155, lr=0.00001,weight = 0.01):
         self.sz = sz
         self.model = newCNN.Model(sz).to(device)
         self.cost = torch.nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay = weight)
 
     def fit(self, X, Y):
         data = X
         label = Y
-        n_epochs = 4
+        n_epochs = 20
         batch_size = 8
         self.model.train()
         train_size = len(X)
@@ -71,7 +71,7 @@ class FEAD:
             if num < batch_size:
                 break
             outputs = self.model(inputs)
-            pred = np.argmax(outputs.data.cpu().numpy(), axis=1)
-            prediction[i * batch_size:min((i + 1) * batch_size, test_size)] = pred
+            _,pred =torch.max(outputs.data.cpu(),1)
+            prediction[i * batch_size:min((i + 1) * batch_size, test_size)] = np.argmax(outputs.data.cpu().numpy(),axis = 1)
 
         return prediction

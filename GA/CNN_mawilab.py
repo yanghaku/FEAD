@@ -1,8 +1,8 @@
 import numpy as np
-import newCNN
 import sys
 
 sys.path.append("../")
+import newCNN
 import torch
 from torch.autograd import Variable
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
