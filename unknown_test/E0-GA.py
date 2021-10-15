@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import FEAD
 
 if "Windows" in platform.platform() :
-    P_dir = 'D:\\Dataset\\KITSUNE\\GA90\\'
+    P_dir = 'D:\\Dataset\\KITSUNE\\kitsune-GA\\'
     dir = [
             P_dir + 'ARP_MitM\\',
             P_dir + 'Fuzzing\\',
@@ -95,4 +95,4 @@ if __name__ == "__main__":
         print("test: ",num)
         print("TN = ", TN, "TP= ", TP, "FN= ", FN, "FP=", FP)
         print("F1-score = ", f1, "Precision = ", precision, "Recall = ", recall, "FPR=", fpr)
-        torch.save(model.model, "E0-GA.model-"+str(ee))
+        torch.save(model.model, str(ee) + "-E0-GA.model")

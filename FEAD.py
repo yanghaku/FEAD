@@ -20,7 +20,7 @@ class FEAD:
         data = X
         label = Y
         n_epochs = 1
-        batch_size = 8
+        batch_size = 16
         self.model.train()
         train_size = len(X)
         data = torch.from_numpy(data).to(device)
@@ -34,10 +34,8 @@ class FEAD:
             print("training Epoch{}/{}".format(epoch, n_epochs))
             train_begin = time.time()
             for i in range(train_batch):
-                inputs = Variable(data[i * batch_size:min((i + 1) * batch_size, train_size), :],
-                                  requires_grad=False).view(-1, 1, self.sz)
-                targets = Variable(label[i * batch_size:min((i + 1) * batch_size, train_size)],
-                                   requires_grad=False)
+                inputs = Variable(data[i * batch_size:min((i + 1) * batch_size, train_size), :],requires_grad=False).view(-1, 1, self.sz)
+                targets = Variable(label[i * batch_size:min((i + 1) * batch_size, train_size)],requires_grad=False)
                 num = min((i + 1) * batch_size, train_size) - i * batch_size
                 if num < batch_size:
                     break
