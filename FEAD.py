@@ -10,7 +10,7 @@ print("device is: ", device)
 
 
 class FEAD:
-    def __init__(self, sz=155, lr=0.00001,weight = 0.01):
+    def __init__(self, sz=155, lr=0.0001,weight = 0.01):
         self.sz = sz
         self.model = newCNN.Model(sz).to(device)
         self.cost = torch.nn.CrossEntropyLoss()
@@ -19,7 +19,7 @@ class FEAD:
     def fit(self, X, Y):
         data = X
         label = Y
-        n_epochs = 1
+        n_epochs = 4
         batch_size = 16
         self.model.train()
         train_size = len(X)

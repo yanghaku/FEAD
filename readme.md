@@ -4,4 +4,11 @@
 
 
 
-run FEAD model:   just run the main.py 
+run Demo:
+
+```shell
+cd Demo
+python demo.py
+```
+
+![](Demo/result_pic.png)
